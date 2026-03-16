@@ -131,9 +131,17 @@ const canvas = document.getElementById("graph")
 
 if(!canvas) return
 
-let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
+// regex koordinat (support spasi)
+let p = text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
-if(p){
+if(!p){
+
+canvas.style.display="none"
+return
+
+}
+
+canvas.style.display="block"
 
 let x1 = parseFloat(p[1])
 let y1 = parseFloat(p[2])
@@ -150,7 +158,8 @@ data:[
 {x:x1,y:y1},
 {x:x2,y:y2}
 ],
-showLine:true
+showLine:true,
+pointRadius:6
 }]
 },
 
@@ -163,8 +172,6 @@ y:{min:-10,max:10}
 }
 
 })
-
-}
 
 }
 
