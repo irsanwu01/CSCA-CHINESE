@@ -1,59 +1,48 @@
 console.log("exam.js loaded")
 
-let questions = []
-let current = 0
-let answers = {}
-let chart = null
+let questions=[]
+let current=0
+let answers={}
+let chart=null
 
 async function loadQuestions(){
 
-let all = []
+let all=[]
 
 for(let i=1;i<=10;i++){
 
-let files = [
+let files=[
 `./questions/set${i}.json`,
 `./questions/set0${i}.json`
 ]
-
-let loaded = false
 
 for(let file of files){
 
 try{
 
-let res = await fetch(file)
+let res=await fetch(file)
 
 if(!res.ok) continue
 
-let text = await res.text()
-
-let data = JSON.parse(text)
-
-all = all.concat(data)
+let data=await res.json()
 
 console.log("Loaded:",file)
 
-loaded = true
+all=all.concat(data)
+
 break
 
 }catch(e){
 
-console.log("Failed:",file)
+console.log("Fail:",file)
 
 }
 
 }
 
-if(!loaded){
-
-console.log("Set not found:",i)
-
 }
 
-}
-
-questions = all
+questions=all
 
 if(questions.length==0){
 
@@ -62,25 +51,18 @@ return
 
 }
 
-current = 0
+current=0
 showQuestion()
 
 }
 
 function showQuestion(){
 
-if(questions.length==0) return
+let q=questions[current]
 
-let q = questions[current]
-
-document.getElementById("title").innerText =
-"Question "+(current+1)+" / "+questions.length
-
-document.getElementById("questionBox").innerHTML = q.hanzi
+document.getElementById("questionBox").innerHTML=q.hanzi
 
 renderOptions(q)
-
-renderDiagram(q.hanzi)
 
 updateProgress()
 
@@ -92,32 +74,33 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
-let checked = answers[current]==i ? "checked" : ""
+let checked=answers[current]==i?"checked":""
 
-html += `
+html+=`
 <label>
-<input type="radio" name="opt"
-value="${i}" ${checked}
+<input type="radio"
+value="${i}"
+${checked}
 onchange="saveAnswer(${i})">
 ${o}
-</label>
+</label><br>
 `
 
 })
 
-document.getElementById("options").innerHTML = html
+document.getElementById("options").innerHTML=html
 
 }
 
 function saveAnswer(v){
 
-answers[current] = v
+answers[current]=v
 
 }
 
 function next(){
 
-if(current < questions.length-1){
+if(current<questions.length-1){
 
 current++
 showQuestion()
@@ -128,7 +111,7 @@ showQuestion()
 
 function prev(){
 
-if(current > 0){
+if(current>0){
 
 current--
 showQuestion()
@@ -139,87 +122,27 @@ showQuestion()
 
 function updateProgress(){
 
-let p = (current+1)/questions.length*100
+let p=(current+1)/questions.length*100
 
-let bar = document.getElementById("progress")
+let bar=document.getElementById("progress")
 
-if(bar){
-bar.style.width = p+"%"
-}
+if(bar) bar.style.width=p+"%"
 
 }
 
 function submitExam(){
 
-let score = 0
+let score=0
 
 questions.forEach((q,i)=>{
 
-if(answers[i]==q.answer){
-score++
-}
+if(answers[i]==q.answer) score++
 
 })
 
-let percent = Math.round(score/questions.length*100)
+let percent=Math.round(score/questions.length*100)
 
 alert("Score: "+percent+"%")
-
-}
-
-function clearGraph(){
-
-if(chart){
-
-chart.destroy()
-chart=null
-
-}
-
-}
-
-function renderDiagram(text){
-
-clearGraph()
-
-const canvas = document.getElementById("graph")
-
-if(!canvas) return
-
-let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
-
-if(p){
-
-let x1 = parseFloat(p[1])
-let y1 = parseFloat(p[2])
-let x2 = parseFloat(p[3])
-let y2 = parseFloat(p[4])
-
-chart = new Chart(canvas,{
-
-type:'scatter',
-
-data:{
-datasets:[{
-data:[
-{x:x1,y:y1},
-{x:x2,y:y2}
-],
-showLine:true
-}]
-},
-
-options:{
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
-}
-}
-
-})
-
-}
 
 }
 
