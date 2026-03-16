@@ -15,8 +15,6 @@ createNav()
 
 load()
 
-showLeaderboard()
-
 })
 
 function createNav(){
@@ -51,15 +49,7 @@ document.getElementById("title").innerText=
 
 document.getElementById("questionBox").innerHTML=q.hanzi
 
-if(q.function){
-drawAutoGraph(q.function)
-}
-else if(q.visual){
-drawVisual(q.visual)
-}
-else{
-document.getElementById("graph").style.display="none"
-}
+autoDetectGraph(q.hanzi)
 
 document.getElementById("progress").style.width=
 ((current+1)/questions.length*100)+"%"
@@ -126,19 +116,13 @@ if(answers[i]==q.answer) correct++
 
 let score=Math.round(correct/questions.length*100)
 
-saveScore(score)
-
 alert(
 "Correct: "+correct+
 "\nTotal: "+questions.length+
 "\nScore: "+score+"%"
 )
 
-showLeaderboard()
-
 }
-
-
 
 
 
@@ -149,8 +133,6 @@ showLeaderboard()
 ========================= */
 
 let examTime=60*60
-
-function startExamTimer(){
 
 setInterval(()=>{
 
@@ -171,13 +153,6 @@ submitExam()
 }
 
 },1000)
-
-}
-
-startExamTimer()
-
-
-
 
 
 
@@ -211,16 +186,54 @@ document.getElementById("qTimer").innerText=
 
 
 
-
-
-
 /* =========================
-   GRAPH ENGINE
+   AUTO GRAPH DETECTOR
 ========================= */
 
-function drawAutoGraph(func){
+function autoDetectGraph(text){
 
 const canvas=document.getElementById("graph")
+
+let func=null
+
+/* detect parabola */
+
+if(text.includes("x²") || text.includes("x^2")){
+
+func="x*x"
+
+}
+
+/* detect linear */
+
+if(text.includes("3x")){
+
+func="3*x"
+
+}
+
+/* detect sin */
+
+if(text.includes("sin")){
+
+func="Math.sin(x)"
+
+}
+
+/* detect cos */
+
+if(text.includes("cos")){
+
+func="Math.cos(x)"
+
+}
+
+if(!func){
+
+canvas.style.display="none"
+return
+
+}
 
 canvas.style.display="block"
 
@@ -267,159 +280,5 @@ plugins:{legend:{display:false}}
 }
 
 })
-
-}
-
-
-
-
-
-
-
-
-/* =========================
-   VISUAL ENGINE
-========================= */
-
-function drawVisual(v){
-
-const canvas=document.getElementById("graph")
-
-canvas.style.display="block"
-
-let xs=[]
-let ys=[]
-
-if(v.type=="circle"){
-
-for(let t=0;t<=360;t++){
-
-let rad=t*Math.PI/180
-
-let x=v.center[0]+v.r*Math.cos(rad)
-let y=v.center[1]+v.r*Math.sin(rad)
-
-xs.push(x)
-ys.push(y)
-
-}
-
-}
-
-if(v.type=="triangle"){
-
-xs=[v.points[0][0],v.points[1][0],v.points[2][0],v.points[0][0]]
-ys=[v.points[0][1],v.points[1][1],v.points[2][1],v.points[0][1]]
-
-}
-
-if(v.type=="vector"){
-
-xs=[0,v.v[0]]
-ys=[0,v.v[1]]
-
-}
-
-new Chart(canvas,{
-
-type:"line",
-
-data:{
-labels:xs,
-datasets:[{
-data:ys,
-borderColor:"red",
-borderWidth:2,
-fill:false
-}]
-},
-
-options:{
-responsive:false,
-plugins:{legend:{display:false}}
-}
-
-})
-
-}
-
-
-
-
-
-
-
-
-/* =========================
-   LEADERBOARD
-========================= */
-
-function saveScore(score){
-
-let board=JSON.parse(localStorage.getItem("leaderboard")||"[]")
-
-board.push(score)
-
-board.sort((a,b)=>b-a)
-
-board=board.slice(0,5)
-
-localStorage.setItem("leaderboard",JSON.stringify(board))
-
-}
-
-function showLeaderboard(){
-
-let board=JSON.parse(localStorage.getItem("leaderboard")||"[]")
-
-let html=""
-
-board.forEach((s,i)=>{
-
-html+=(i+1)+". "+s+"%<br>"
-
-})
-
-document.getElementById("leaderboard").innerHTML=html
-
-}
-
-
-
-
-
-
-
-
-/* =========================
-   SHARE SCORE
-========================= */
-
-function shareScore(){
-
-let correct=answers.filter((a,i)=>a==questions[i].answer).length
-
-let score=Math.round(correct/questions.length*100)
-
-let text="I scored "+score+"% on CSCA Prep! Try it: https://irsanwu01.github.io/CSCA-CHINESE"
-
-window.open("https://wa.me/?text="+encodeURIComponent(text))
-
-}
-
-
-
-
-
-
-
-
-/* =========================
-   ANTI REFRESH
-========================= */
-
-window.onbeforeunload=function(){
-
-return "Exam in progress"
 
 }
