@@ -9,20 +9,32 @@ let seconds=0
 
 async function loadSet(){
 
+try{
+
 let res=await fetch("./questions/set1.json")
 questions=await res.json()
 
-startTimer()
+}catch(e){
 
+console.log("Load error:",e)
+questions=[]
+
+}
+
+startTimer()
 showQuestion()
 
 }
 
 
+
 function startTimer(){
 
-let m=parseInt(document.getElementById("examTime").value)
+let select=document.getElementById("examTime")
 
+if(!select) return
+
+let m=parseInt(select.value)
 seconds=m*60
 
 if(timer) clearInterval(timer)
@@ -36,12 +48,12 @@ let sec=seconds%60
 
 if(sec<10) sec="0"+sec
 
-document.getElementById("timer").innerText="Time: "+min+":"+sec
+let t=document.getElementById("timer")
+if(t) t.innerText="Time: "+min+":"+sec
 
 if(seconds<=0){
 
 clearInterval(timer)
-
 submitExam()
 
 }
@@ -54,18 +66,18 @@ submitExam()
 
 function showQuestion(){
 
+if(questions.length===0) return
+
 let q=questions[current]
 
-document.getElementById("title").innerText=
-"Question "+(current+1)+" / "+questions.length
+let title=document.getElementById("title")
+if(title) title.innerText="Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML=
-"<b>"+(current+1)+".</b> "+q.hanzi
+let qbox=document.getElementById("questionBox")
+if(qbox) qbox.innerHTML="<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
-
 drawGraph(q.hanzi)
-
 updateProgress()
 
 }
@@ -91,7 +103,8 @@ ${o}
 
 })
 
-document.getElementById("options").innerHTML=html
+let opt=document.getElementById("options")
+if(opt) opt.innerHTML=html
 
 }
 
@@ -108,6 +121,8 @@ showQuestion()
 
 }
 
+
+
 function prev(){
 
 if(current>0){
@@ -123,8 +138,11 @@ showQuestion()
 
 function updateProgress(){
 
+let bar=document.getElementById("progress")
+if(!bar) return
+
 let p=(current+1)/questions.length*100
-document.getElementById("progress").style.width=p+"%"
+bar.style.width=p+"%"
 
 }
 
@@ -140,7 +158,7 @@ if(answers[i]==q.answer) score++
 
 })
 
-alert("Score: "+score+"/"+questions.length)
+alert("Score: "+score+" / "+questions.length)
 
 }
 
@@ -149,18 +167,22 @@ alert("Score: "+score+"/"+questions.length)
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
+if(!canvas) return
 
-if(chart) chart.destroy()
+if(chart){
+chart.destroy()
+chart=null
+}
 
 text=text.replace(/\*/g,"")
 
 
 
-// ============================
-// DETECT TWO POINTS
-// ============================
+/* ======================
+   TWO POINTS
+====================== */
 
-let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
+let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
 
 if(coords.length>=2){
 
@@ -179,14 +201,14 @@ data:[
 {x:x2,y:y2}
 ],
 showLine:true,
-pointRadius:6,
-borderColor:"blue"
+borderColor:"blue",
+pointRadius:6
 }]
 },
 options:{
+plugins:{legend:{display:false}},
 responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}}
+maintainAspectRatio:false
 }
 })
 
@@ -195,29 +217,31 @@ return
 
 
 
-// ============================
-// DETECT HYPERBOLA
-// ============================
+/* ======================
+   HYPERBOLA
+====================== */
 
-let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
+let hyper=text.match(/x[\^²]2\/(\d+)\s*-\s*y[\^²]2\/(\d+)/)
 
 if(hyper){
 
 let a=Math.sqrt(parseFloat(hyper[1]))
 let b=Math.sqrt(parseFloat(hyper[2]))
 
-let right=[]
-let left=[]
+let rightTop=[]
+let rightBottom=[]
+let leftTop=[]
+let leftBottom=[]
 
 for(let x=a+0.01;x<=6;x+=0.05){
 
 let y=b*Math.sqrt((x*x)/(a*a)-1)
 
-right.push({x:x,y:y})
-right.push({x:x,y:-y})
+rightTop.push({x:x,y:y})
+rightBottom.push({x:x,y:-y})
 
-left.push({x:-x,y:y})
-left.push({x:-x,y:-y})
+leftTop.push({x:-x,y:y})
+leftBottom.push({x:-x,y:-y})
 
 }
 
@@ -229,14 +253,28 @@ data:{
 datasets:[
 
 {
-data:right,
+data:rightTop,
 showLine:true,
 borderColor:"purple",
 pointRadius:0
 },
 
 {
-data:left,
+data:rightBottom,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:leftTop,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:leftBottom,
 showLine:true,
 borderColor:"purple",
 pointRadius:0
@@ -247,17 +285,17 @@ data:[
 {x:c,y:0},
 {x:-c,y:0}
 ],
-pointRadius:6,
-backgroundColor:"blue"
+backgroundColor:"blue",
+pointRadius:6
 }
 
 ]
 },
 
 options:{
+plugins:{legend:{display:false}},
 responsive:true,
 maintainAspectRatio:false,
-plugins:{legend:{display:false}},
 scales:{
 x:{min:-6,max:6},
 y:{min:-6,max:6}
