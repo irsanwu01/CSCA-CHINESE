@@ -5,6 +5,32 @@ let chart=null
 
 
 /* =============================
+   WAIT DB READY
+============================= */
+
+function waitForDB(){
+
+return new Promise(resolve=>{
+
+const check=()=>{
+
+if(window.db){
+resolve()
+}else{
+setTimeout(check,50)
+}
+
+}
+
+check()
+
+})
+
+}
+
+
+
+/* =============================
    GET SET FROM URL
 ============================= */
 
@@ -20,7 +46,7 @@ window.currentSet = parseInt(params.get("set")) || 1
 
 async function checkAccess(){
 
-let { data:{ user } } = await db.auth.getUser()
+let { data:{ user } } = await window.db.auth.getUser()
 
 if(!user){
 
@@ -33,7 +59,7 @@ return false
 }
 
 
-let { data } = await db
+let { data } = await window.db
 .from("users")
 .select("premium")
 .eq("email", user.email)
@@ -257,7 +283,6 @@ y:{min:-5,max:5}
 
 })
 
-return
 }
 
 }
@@ -268,4 +293,6 @@ return
    START
 ============================= */
 
+waitForDB().then(()=>{
 loadSet()
+})
