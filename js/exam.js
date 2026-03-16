@@ -1,77 +1,87 @@
-let questions = []
-let current = 0
-let answers = []
+let questions=[]
+let current=0
+let answers=[]
+let qTimes=[]
 
-const label = ["A","B","C","D"]
-
-let params = new URLSearchParams(location.search)
-let set = params.get("set") || 1
+let params=new URLSearchParams(location.search)
+let set=params.get("set") || 1
 
 fetch("questions/set"+set+".json")
 .then(r=>r.json())
 .then(data=>{
-questions = data.slice(0,48)
+
+questions=data.slice(0,48)
+
+createNav()
+
 load()
+
 })
+
+function createNav(){
+
+let html=""
+
+for(let i=0;i<48;i++){
+
+html+=`<button id="nav${i}" onclick="goto(${i})">${i+1}</button>`
+
+}
+
+document.getElementById("nav").innerHTML=html
+
+}
+
+function goto(i){
+
+current=i
+
+load()
+
+}
 
 function load(){
 
-if(!questions.length) return
+startQuestionTimer()
 
-let q = questions[current]
+let q=questions[current]
 
-document.getElementById("title").innerText =
-"Question " + (current+1) + " / " + questions.length
+document.getElementById("title").innerText=
+"Question "+(current+1)+" / "+questions.length
 
-let html = q.hanzi
+document.getElementById("questionBox").innerHTML=q.hanzi
 
-if(q.image){
-
-html += "<br><img src='"+q.image+"' style='max-width:420px;margin-top:10px'>"
-
-}
-
-document.getElementById("questionBox").innerHTML = html
-
-let opt=""
+let html=""
 
 q.options.forEach((o,i)=>{
 
-let selected = ""
+let disabled=""
 
-if(answers[current] == i){
-selected = "style='background:#ffe082'"
-}
+if(answers[current]!=null) disabled="disabled"
 
-opt += `<button ${selected} onclick="select(${i})">${label[i]}. ${o}</button><br>`
+html+=`<button ${disabled} onclick="select(${i})">${o}</button><br>`
 
 })
 
-document.getElementById("options").innerHTML = opt
+document.getElementById("options").innerHTML=html
 
 }
 
 function select(i){
 
-answers[current] = i
+if(answers[current]!=null) return
 
-if(current < questions.length-1){
+answers[current]=i
 
-current++
+document.getElementById("nav"+current).classList.add("answered")
 
-load()
-
-}else{
-
-load()
-
-}
+next()
 
 }
 
 function next(){
 
-if(current < questions.length-1){
+if(current<questions.length-1){
 
 current++
 
@@ -83,7 +93,7 @@ load()
 
 function prev(){
 
-if(current > 0){
+if(current>0){
 
 current--
 
@@ -95,22 +105,66 @@ load()
 
 function submitExam(){
 
-let correct = 0
+let correct=0
 
 questions.forEach((q,i)=>{
 
-if(answers[i] == q.answer){
-correct++
-}
+if(answers[i]==q.answer) correct++
 
 })
 
-let score = Math.round((correct / questions.length) * 100)
-
 alert(
-"Correct : " + correct +
-"\nTotal : " + questions.length +
-"\nScore : " + score + "%"
+"Correct: "+correct+
+"\nTotal: "+questions.length+
+"\nScore: "+Math.round(correct/questions.length*100)+"%"
 )
+
+}
+
+let examTime=60*60
+
+function startExamTimer(){
+
+setInterval(()=>{
+
+let m=Math.floor(examTime/60)
+let s=examTime%60
+
+document.getElementById("timer").innerText=
+"Exam Time: "+m+":"+(s<10?"0"+s:s)
+
+examTime--
+
+if(examTime<0){
+
+alert("Time is up")
+
+submitExam()
+
+}
+
+},1000)
+
+}
+
+startExamTimer()
+
+let questionTime=0
+let qTimer
+
+function startQuestionTimer(){
+
+questionTime=0
+
+clearInterval(qTimer)
+
+qTimer=setInterval(()=>{
+
+questionTime++
+
+document.getElementById("qTimer").innerText=
+"Time on this question: "+questionTime+"s"
+
+},1000)
 
 }
