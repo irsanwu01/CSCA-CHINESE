@@ -1,185 +1,20 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Ujian · CSCA 数学</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f4fa; min-height: 100vh; }
-        .navbar { background: #132433; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.8rem; font-weight: bold; }
-        .user-info { display: flex; align-items: center; gap: 20px; }
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        
-        .result-header { background: linear-gradient(145deg, #132433, #1e3347); color: white; border-radius: 40px; padding: 50px; text-align: center; margin-bottom: 30px; }
-        .result-header h1 { font-size: 3rem; margin-bottom: 20px; }
-        .score-circle { width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; margin: 30px auto; display: flex; align-items: center; justify-content: center; border: 5px solid white; }
-        .score-number { font-size: 4rem; font-weight: 700; }
-        .score-total { font-size: 1.5rem; opacity: 0.8; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .stat-card h3 { color: #5f6b7a; font-size: 1rem; margin-bottom: 10px; }
-        .stat-card .value { font-size: 2rem; font-weight: 700; color: #132433; }
-        
-        .section-scores { background: white; border-radius: 30px; padding: 30px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .section-title { color: #132433; font-size: 1.5rem; margin-bottom: 20px; }
-        .section-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e0e7ef; }
-        .section-name { font-size: 1.1rem; }
-        .section-score { font-weight: 600; color: #132433; }
-        .progress-bar { width: 100%; height: 10px; background: #e0e7ef; border-radius: 10px; margin: 10px 0; }
-        .progress-fill { height: 10px; background: #132433; border-radius: 10px; width: 0%; }
-        
-        .answers-review { background: white; border-radius: 30px; padding: 30px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-height: 500px; overflow-y: auto; }
-        .answer-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #e0e7ef; }
-        .answer-correct { color: #28a745; font-weight: 600; }
-        .answer-wrong { color: #dc3545; font-weight: 600; }
-        
-        .btn-actions { display: flex; gap: 20px; justify-content: center; margin: 40px 0; }
-        .btn-primary { background: #132433; color: white; border: none; padding: 15px 40px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; }
-        .btn-secondary { background: white; border: 2px solid #132433; color: #132433; padding: 15px 40px; border-radius: 40px; font-size: 1.2rem; cursor: pointer; }
-        
-        .footer { text-align: center; padding: 30px; color: #5f6b7a; }
-    </style>
+<meta charset="UTF-8">
+<title>Result</title>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">CSCA 数学 · Hasil Ujian</div>
-        <div class="user-info">
-            <span class="user-email" id="userEmail">zhang@email.com</span>
-        </div>
-    </div>
 
-    <div class="container">
-        <div class="result-header">
-            <h1>Hasil Ujian Anda</h1>
-            <div class="score-circle">
-                <div>
-                    <div class="score-number" id="scorePercentage">85</div>
-                    <div class="score-total">/100</div>
-                </div>
-            </div>
-            <p id="scoreMessage" style="font-size: 1.3rem;">Selamat! Anda lulus dengan baik</p>
-        </div>
+<h1>Exam Result</h1>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Benar</h3>
-                <div class="value" id="correctCount">40</div>
-            </div>
-            <div class="stat-card">
-                <h3>Salah</h3>
-                <div class="value" id="wrongCount">8</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Soal</h3>
-                <div class="value" id="totalCount">48</div>
-            </div>
-            <div class="stat-card">
-                <h3>Waktu Pengerjaan</h3>
-                <div class="value" id="timeSpent">45:30</div>
-            </div>
-        </div>
+<div id="score"></div>
 
-        <div class="section-scores">
-            <h3 class="section-title">Nilai per Bagian</h3>
-            <div class="section-item">
-                <span class="section-name">Aljabar & Fungsi (17 soal)</span>
-                <span class="section-score" id="aljabarScore">15/17</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="aljabarProgress" style="width: 88%"></div></div>
-            
-            <div class="section-item">
-                <span class="section-name">Kalkulus (14 soal)</span>
-                <span class="section-score" id="kalkulusScore">12/14</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="kalkulusProgress" style="width: 86%"></div></div>
-            
-            <div class="section-item">
-                <span class="section-name">Geometri & Vektor (10 soal)</span>
-                <span class="section-score" id="geometriScore">8/10</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="geometriProgress" style="width: 80%"></div></div>
-            
-            <div class="section-item">
-                <span class="section-name">Probabilitas & Statistik (7 soal)</span>
-                <span class="section-score" id="probstatScore">5/7</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="probstatProgress" style="width: 71%"></div></div>
-        </div>
+<script>
+document.getElementById("score").innerText =
+"Score: " + localStorage.getItem("score");
+</script>
 
-        <div class="answers-review">
-            <h3 class="section-title">Review Jawaban</h3>
-            <div id="answersList">
-                <!-- Answers will be inserted here -->
-            </div>
-        </div>
-
-        <div class="btn-actions">
-            <button class="btn-secondary" onclick="window.location.href='dashboard.html'">← Kembali ke Dashboard</button>
-            <button class="btn-primary" onclick="window.location.href='exam.html?package=' + getPackageId()">Ulangi Ujian</button>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>created by Irsanwu · © 2024 CSCA Exam Platform</p>
-    </div>
-
-    <script>
-        // Load result from localStorage
-        const result = JSON.parse(localStorage.getItem('lastExamResult')) || {
-            package: '1',
-            correct: 40,
-            total: 48,
-            totalTime: 2730, // 45.5 minutes in seconds
-            timePerQuestion: []
-        };
-
-        function getPackageId() {
-            return result.package || '1';
-        }
-
-        // Calculate score
-        const score = ((result.correct / result.total) * 100).toFixed(1);
-        document.getElementById('scorePercentage').innerText = score;
-        document.getElementById('correctCount').innerText = result.correct;
-        document.getElementById('wrongCount').innerText = result.total - result.correct;
-        document.getElementById('totalCount').innerText = result.total;
-
-        // Format time
-        const minutes = Math.floor(result.totalTime / 60);
-        const seconds = result.totalTime % 60;
-        document.getElementById('timeSpent').innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-        // Score message
-        let message = '';
-        if (score >= 90) message = '🎉 Luar biasa! Anda menguasai materi dengan sangat baik';
-        else if (score >= 75) message = '👍 Bagus! Anda lulus dengan memuaskan';
-        else if (score >= 60) message = '📚 Cukup. Perlu belajar lagi beberapa bagian';
-        else message = '📖 Perlu belajar lagi. Jangan menyerah!';
-        document.getElementById('scoreMessage').innerText = message;
-
-        // Section scores (demo values - in real app would come from result)
-        document.getElementById('aljabarScore').innerText = `${Math.round(result.correct * 0.35)}/17`;
-        document.getElementById('kalkulusScore').innerText = `${Math.round(result.correct * 0.3)}/14`;
-        document.getElementById('geometriScore').innerText = `${Math.round(result.correct * 0.2)}/10`;
-        document.getElementById('probstatScore').innerText = `${Math.round(result.correct * 0.15)}/7`;
-
-        // Generate answers review
-        let answersHtml = '';
-        for (let i = 1; i <= result.total; i++) {
-            const isCorrect = Math.random() > 0.2; // demo random
-            answersHtml += `
-                <div class="answer-item">
-                    <span>Soal ${i}</span>
-                    <span class="${isCorrect ? 'answer-correct' : 'answer-wrong'}">
-                        ${isCorrect ? '✓ Benar' : '✗ Salah'}
-                    </span>
-                </div>
-            `;
-        }
-        document.getElementById('answersList').innerHTML = answersHtml;
-    </script>
 </body>
 </html>
