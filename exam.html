@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
-<title>CSCA Chinese Mathematics Exam</title>
+<title>CSCA Exam</title>
 
 <style>
-
 body{
 font-family:Arial;
 margin:20px;
@@ -24,11 +22,6 @@ width:100%;
 height:100%;
 }
 
-#timer{
-color:red;
-font-size:18px;
-}
-
 #progressBar{
 width:100%;
 height:8px;
@@ -43,33 +36,21 @@ width:0%;
 }
 
 </style>
-
 </head>
 
 <body>
 
 <h2 id="title"></h2>
 
-Exam Time:
-<select id="examTime">
-<option value="30">30 minutes</option>
-<option value="45">45 minutes</option>
-<option value="60" selected>60 minutes</option>
-<option value="75">75 minutes</option>
-<option value="90">90 minutes</option>
-</select>
-
-<div id="timer"></div>
-
-<br>
-
 <div id="questionBox"></div>
 
 <div id="options"></div>
 
-<div id="graphBox" style="width:100%;height:220px;margin-top:10px;">
-  <canvas id="graph"></canvas>
+<div id="graphBox">
+<canvas id="graph"></canvas>
 </div>
+
+<br>
 
 <button onclick="prev()">Prev</button>
 <button onclick="next()">Next</button>
