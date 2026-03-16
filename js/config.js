@@ -2,7 +2,7 @@ const SUPABASE_URL = "https://rgswtegsanbwtajqhmgy.supabase.co"
 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnc3d0ZWdzYW5id3RhanFobWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MjQxMzIsImV4cCI6MjA4OTIwMDEzMn0.OW8IA3_AQy8gFkzjB8n8YlzyoXmvkeoSRelGHybAI7Q"
 
-const supabase = window.supabase.createClient(
+window.db = supabase.createClient(
 SUPABASE_URL,
 SUPABASE_KEY
 )
