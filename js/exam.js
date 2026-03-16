@@ -3,6 +3,9 @@ let current = 0
 let answers = {}
 let chart = null
 
+let timeLeft = 3600
+let timerInterval
+
 async function loadSet(n){
 
 let file = "./questions/set"+n+".json"
@@ -17,6 +20,8 @@ current = 0
 
 showQuestion()
 
+startTimer()
+
 }
 
 function showQuestion(){
@@ -26,9 +31,12 @@ let q = questions[current]
 document.getElementById("title").innerText =
 "Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML = q.hanzi
+document.getElementById("questionBox").innerHTML =
+"<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
+
+renderDiagram(q.hanzi)
 
 updateProgress()
 
@@ -48,7 +56,7 @@ html += `
 value="${i}" ${checked}
 onchange="saveAnswer(${i})">
 ${o}
-</label><br>
+</label>
 `
 
 })
@@ -95,6 +103,8 @@ document.getElementById("progress").style.width = p+"%"
 
 function submitExam(){
 
+clearInterval(timerInterval)
+
 let score = 0
 
 questions.forEach((q,i)=>{
@@ -106,6 +116,92 @@ if(answers[i]==q.answer) score++
 let percent = Math.round(score/questions.length*100)
 
 alert("Score: "+percent+"%")
+
+}
+
+function startTimer(){
+
+let minutes = document.getElementById("examTime").value
+
+timeLeft = minutes * 60
+
+timerInterval = setInterval(()=>{
+
+timeLeft--
+
+let m = Math.floor(timeLeft/60)
+let s = timeLeft%60
+
+document.getElementById("timer").innerText =
+"Time: "+m+":"+(s<10?"0":"")+s
+
+if(timeLeft<=0){
+
+clearInterval(timerInterval)
+
+alert("Time up!")
+
+submitExam()
+
+}
+
+},1000)
+
+}
+
+function clearGraph(){
+
+if(chart){
+
+chart.destroy()
+chart=null
+
+}
+
+}
+
+function renderDiagram(text){
+
+clearGraph()
+
+const canvas = document.getElementById("graph")
+
+if(!canvas) return
+
+let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
+
+if(p){
+
+let x1 = parseFloat(p[1])
+let y1 = parseFloat(p[2])
+let x2 = parseFloat(p[3])
+let y2 = parseFloat(p[4])
+
+chart = new Chart(canvas,{
+
+type:'scatter',
+
+data:{
+datasets:[{
+data:[
+{x:x1,y:y1},
+{x:x2,y:y2}
+],
+showLine:true
+}]
+},
+
+options:{
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-10,max:10},
+y:{min:-10,max:10}
+}
+}
+
+})
+
+}
 
 }
 
