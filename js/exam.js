@@ -13,8 +13,9 @@ fetch("questions/set"+set+".json")
     load()
 })
 
-// load question
 function load(){
+
+    if(questions.length === 0) return
 
     let q = questions[current]
 
@@ -36,14 +37,14 @@ function load(){
 
     q.options.forEach((o,i)=>{
 
-        let checked = ""
+        let selected = ""
 
-        if(answers[current] == i){
-            checked = "style='background:#ffe082'"
+        if(answers[current] === i){
+            selected = "style='background:#ffe082'"
         }
 
         optionsHTML +=
-        `<button ${checked} onclick="select(${i})">${o}</button><br>`
+        `<button ${selected} onclick="select(${i})">${o}</button><br>`
 
     })
 
@@ -51,62 +52,40 @@ function load(){
 
 }
 
-// pilih jawaban
 function select(i){
-
     answers[current] = i
-
     load()
-
 }
 
-// next question
 function next(){
-
     if(current < questions.length - 1){
-
         current++
-
         load()
-
     }
-
 }
 
-// previous question
 function prev(){
-
     if(current > 0){
-
         current--
-
         load()
-
     }
-
 }
 
-// submit exam
 function submitExam(){
 
     let correct = 0
 
     questions.forEach((q,i)=>{
-
-        if(answers[i] == q.answer){
-
+        if(answers[i] === q.answer){
             correct++
-
         }
-
     })
 
     let score = Math.round((correct / questions.length) * 100)
 
     alert(
-    "Correct : " + correct +
-    "\nTotal : " + questions.length +
-    "\nScore : " + score
+        "Correct: " + correct +
+        "\nTotal: " + questions.length +
+        "\nScore: " + score
     )
-
 }
