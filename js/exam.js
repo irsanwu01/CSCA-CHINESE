@@ -20,7 +20,6 @@ showQuestion()
 }
 
 
-
 function startTimer(){
 
 let m=parseInt(document.getElementById("examTime").value)
@@ -183,7 +182,12 @@ clearGraph()
 
 let canvas=document.getElementById("graph")
 
-// ====== DETECT TWO POINTS ======
+if(!canvas) return
+
+
+// =================
+// TWO POINTS
+// =================
 
 let p=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
@@ -194,56 +198,30 @@ let y1=parseFloat(p[2])
 let x2=parseFloat(p[3])
 let y2=parseFloat(p[4])
 
-let dx=x2-x1
-let dy=y2-y1
-
-let dist=Math.sqrt(dx*dx+dy*dy).toFixed(2)
-
 let minX=Math.min(x1,x2)-1
 let maxX=Math.max(x1,x2)+1
 let minY=Math.min(y1,y2)-1
 let maxY=Math.max(y1,y2)+1
-
 
 chart=new Chart(canvas,{
 
 type:'scatter',
 
 data:{
-datasets:[
-
-{
-label:'Line',
+datasets:[{
 data:[
 {x:x1,y:y1},
 {x:x2,y:y2}
 ],
 showLine:true,
 pointRadius:6
-},
-
-{
-type:'scatter',
-data:[
-{
-x:(x1+x2)/2,
-y:(y1+y2)/2
-}
-],
-pointRadius:0
-}
-
-]
-
+}]
 },
 
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{
-legend:{display:false},
-tooltip:{enabled:false}
-},
+plugins:{legend:{display:false}},
 scales:{
 x:{min:minX,max:maxX},
 y:{min:minY,max:maxY}
@@ -257,49 +235,46 @@ return
 }
 
 
-// ====== DETECT CIRCLE ======
+// =================
+// LINE y = ax + b
+// =================
 
-let circle=text.match(/x²\s*\+\s*y²\s*=\s*(\d+)/)
+let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
 
-if(circle){
+if(line){
 
-let r=Math.sqrt(parseFloat(circle[1]))
+let a=parseFloat(line[1]||1)
+let b=parseFloat(line[2]||0)
 
-let points=[]
+let pts=[]
 
-for(let t=0;t<360;t+=5){
+for(let x=-10;x<=10;x++){
 
-let rad=t*Math.PI/180
-
-points.push({
-x:r*Math.cos(rad),
-y:r*Math.sin(rad)
+pts.push({
+x:x,
+y:a*x+b
 })
 
 }
 
 chart=new Chart(canvas,{
-
 type:'scatter',
-
 data:{
 datasets:[{
-data:points,
+data:pts,
 showLine:true,
 pointRadius:0
 }]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false,
 plugins:{legend:{display:false}},
 scales:{
-x:{min:-r-1,max:r+1},
-y:{min:-r-1,max:r+1}
+x:{min:-10,max:10},
+y:{min:-10,max:10}
 }
 }
-
 })
 
 return
@@ -307,14 +282,59 @@ return
 }
 
 
-// ====== DETECT ELLIPSE ======
+// =================
+// PARABOLA
+// =================
 
-let ellipse=text.match(/x²\/(\d+)\s*\+\s*y²\/(\d+)/)
+let para=text.match(/y\s*=\s*(-?\d*)x²\s*([+-]\s*\d+)?x?\s*([+-]\s*\d+)?/)
 
-if(ellipse){
+if(para){
 
-let a=Math.sqrt(parseFloat(ellipse[1]))
-let b=Math.sqrt(parseFloat(ellipse[2]))
+let a=parseFloat(para[1]||1)
+let b=parseFloat(para[2]||0)
+let c=parseFloat(para[3]||0)
+
+let pts=[]
+
+for(let x=-10;x<=10;x+=0.2){
+
+pts.push({
+x:x,
+y:a*x*x+b*x+c
+})
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:pts,
+showLine:true,
+pointRadius:0
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:false}}
+}
+})
+
+return
+
+}
+
+
+// =================
+// CIRCLE
+// =================
+
+let circle=text.match(/x²\s*\+\s*y²\s*=\s*(\d+)/)
+
+if(circle){
+
+let r=Math.sqrt(parseFloat(circle[1]))
 
 let pts=[]
 
@@ -323,8 +343,8 @@ for(let t=0;t<360;t+=5){
 let rad=t*Math.PI/180
 
 pts.push({
-x:a*Math.cos(rad),
-y:b*Math.sin(rad)
+x:r*Math.cos(rad),
+y:r*Math.sin(rad)
 })
 
 }
@@ -341,60 +361,7 @@ pointRadius:0
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-a-1,max:a+1},
-y:{min:-b-1,max:b+1}
-}
-}
-})
-
-return
-
-}
-
-
-// ====== DETECT HYPERBOLA ======
-
-let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
-
-if(hyper){
-
-let a=Math.sqrt(parseFloat(hyper[1]))
-let b=Math.sqrt(parseFloat(hyper[2]))
-
-let pts=[]
-
-for(let x=-5;x<=5;x+=0.1){
-
-let y=Math.sqrt((x*x/a/a-1))*b
-
-if(!isNaN(y)){
-
-pts.push({x:x,y:y})
-pts.push({x:x,y:-y})
-
-}
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:false,
-pointRadius:1
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-6,max:6},
-y:{min:-6,max:6}
-}
+plugins:{legend:{display:false}}
 }
 })
 
