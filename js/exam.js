@@ -98,7 +98,11 @@ return true
 
 async function loadSet(){
 
+console.log("loadSet started")
+
 let allowed = await checkAccess()
+
+console.log("allowed:", allowed)
 
 if(!allowed) return
 
