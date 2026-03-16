@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head>
 
+<head>
 <meta charset="UTF-8">
-<title>CSCA Chinese Mathematics Exam</title>
+<title>CSCA Exam</title>
 
 <style>
 
@@ -15,7 +15,7 @@ max-width:720px;
 
 #graph{
 width:100%;
-height:220px;
+height:200px;
 border:1px solid #ccc;
 margin-top:10px;
 }
@@ -33,11 +33,26 @@ background:#4CAF50;
 width:0%;
 }
 
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
 </style>
 
 </head>
 
 <body>
+
+<div class="topbar">
+
+<div id="userEmail"></div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
 
 <h2 id="title"></h2>
 
@@ -57,8 +72,35 @@ width:0%;
 <div id="progress"></div>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="js/config.js"></script>
+
+<script>
+
+async function checkLogin(){
+
+let {data}=await window.db.auth.getSession()
+
+if(!data.session){
+
+window.location="login.html"
+return
+
+}
+
+document.getElementById("userEmail").innerText=data.session.user.email
+
+}
+
+checkLogin()
+
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/exam.js"></script>
 
 </body>
+
 </html>
