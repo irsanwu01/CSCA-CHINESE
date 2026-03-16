@@ -16,6 +16,8 @@ createNav()
 
 load()
 
+showLeaderboard()
+
 })
 
 function createNav(){
@@ -52,6 +54,9 @@ document.getElementById("title").innerText=
 document.getElementById("questionBox").innerHTML=q.hanzi
 
 drawGraph(q.graph)
+
+document.getElementById("progress").style.width=
+((current+1)/questions.length*100)+"%"
 
 let html=""
 
@@ -115,11 +120,17 @@ if(answers[i]==q.answer) correct++
 
 })
 
+let score=Math.round(correct/questions.length*100)
+
+saveScore(score)
+
 alert(
 "Correct: "+correct+
 "\nTotal: "+questions.length+
-"\nScore: "+Math.round(correct/questions.length*100)+"%"
+"\nScore: "+score+"%"
 )
+
+showLeaderboard()
 
 }
 
@@ -204,5 +215,53 @@ plugins:{legend:{display:false}}
 }
 
 })
+
+}
+
+function saveScore(score){
+
+let board=JSON.parse(localStorage.getItem("leaderboard")||"[]")
+
+board.push(score)
+
+board.sort((a,b)=>b-a)
+
+board=board.slice(0,5)
+
+localStorage.setItem("leaderboard",JSON.stringify(board))
+
+}
+
+function showLeaderboard(){
+
+let board=JSON.parse(localStorage.getItem("leaderboard")||"[]")
+
+let html=""
+
+board.forEach((s,i)=>{
+
+html+=(i+1)+". "+s+"%<br>"
+
+})
+
+document.getElementById("leaderboard").innerHTML=html
+
+}
+
+function shareScore(){
+
+let correct=answers.filter((a,i)=>a==questions[i].answer).length
+
+let score=Math.round(correct/questions.length*100)
+
+let text="I scored "+score+"% on CSCA Prep! Try it: https://irsanwu01.github.io/CSCA-CHINESE"
+
+window.open("https://wa.me/?text="+encodeURIComponent(text))
+
+}
+
+window.onbeforeunload=function(){
+
+return "Exam in progress"
 
 }
