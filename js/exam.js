@@ -185,41 +185,30 @@ let canvas=document.getElementById("graph")
 if(!canvas) return
 
 
-// hapus karakter * agar regex lebih stabil
 text=text.replace(/\*/g,"")
 
 
-// cari semua koordinat (x,y)
+// =================
+// DETECT POINTS
+// =================
+
 let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
 
-if(coords.length<2){
+if(coords.length>=2){
 
-canvas.style.display="none"
-return
+let x1=+coords[0][1]
+let y1=+coords[0][2]
 
-}
-
-canvas.style.display="block"
-
-let x1=parseFloat(coords[0][1])
-let y1=parseFloat(coords[0][2])
-
-let x2=parseFloat(coords[1][1])
-let y2=parseFloat(coords[1][2])
-
-
-// auto zoom
+let x2=+coords[1][1]
+let y2=+coords[1][2]
 
 let minX=Math.min(x1,x2)-1
 let maxX=Math.max(x1,x2)+1
 let minY=Math.min(y1,y2)-1
 let maxY=Math.max(y1,y2)+1
 
-
 chart=new Chart(canvas,{
-
 type:'scatter',
-
 data:{
 datasets:[{
 data:[
@@ -230,7 +219,6 @@ showLine:true,
 pointRadius:6
 }]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false,
@@ -240,8 +228,105 @@ x:{min:minX,max:maxX},
 y:{min:minY,max:maxY}
 }
 }
-
 })
+
+return
+
+}
+
+
+
+// =================
+// HYPERBOLA
+// =================
+
+let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
+
+if(hyper){
+
+let a=Math.sqrt(+hyper[1])
+let b=Math.sqrt(+hyper[2])
+
+let pts=[]
+
+for(let x=-6;x<=6;x+=0.1){
+
+let y=Math.sqrt((x*x)/(a*a)-1)*b
+
+if(!isNaN(y)){
+
+pts.push({x:x,y:y})
+pts.push({x:x,y:-y})
+
+}
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:pts,
+pointRadius:1
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+})
+
+return
+
+}
+
+
+
+// =================
+// CIRCLE
+// =================
+
+let circle=text.match(/x²\s*\+\s*y²\s*=\s*(\d+)/)
+
+if(circle){
+
+let r=Math.sqrt(+circle[1])
+
+let pts=[]
+
+for(let t=0;t<360;t+=5){
+
+let rad=t*Math.PI/180
+
+pts.push({
+x:r*Math.cos(rad),
+y:r*Math.sin(rad)
+})
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:pts,
+showLine:true,
+pointRadius:0
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+})
+
+return
+
+}
+
+
+
+canvas.style.display="none"
 
 }
 
