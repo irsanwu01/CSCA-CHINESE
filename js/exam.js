@@ -1,13 +1,14 @@
-let questions = []
-let current = 0
-let chart = null
+let questions=[]
+let current=0
+let answers={}
+let chart=null
 
 
 
 async function loadSet(){
 
-let res = await fetch("./questions/set1.json")
-questions = await res.json()
+let res=await fetch("./questions/set1.json")
+questions=await res.json()
 
 showQuestion()
 
@@ -17,12 +18,12 @@ showQuestion()
 
 function showQuestion(){
 
-let q = questions[current]
+let q=questions[current]
 
-document.getElementById("title").innerText =
-"Question " + (current+1) + " / " + questions.length
+document.getElementById("title").innerText=
+"Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML =
+document.getElementById("questionBox").innerHTML=
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
@@ -37,11 +38,24 @@ function renderOptions(q){
 
 let html=""
 
-q.options.forEach(o=>{
-html += "<div>"+o+"</div>"
+q.options.forEach((o,i)=>{
+
+let checked=answers[current]==i?"checked":""
+
+html+=`
+<label>
+<input type="radio"
+name="opt"
+value="${i}"
+${checked}
+onchange="answers[current]=${i}">
+${o}
+</label><br>
+`
+
 })
 
-document.getElementById("options").innerHTML = html
+document.getElementById("options").innerHTML=html
 
 }
 
@@ -49,7 +63,7 @@ document.getElementById("options").innerHTML = html
 
 function next(){
 
-if(current < questions.length-1){
+if(current<questions.length-1){
 current++
 showQuestion()
 }
@@ -60,7 +74,7 @@ showQuestion()
 
 function prev(){
 
-if(current > 0){
+if(current>0){
 current--
 showQuestion()
 }
@@ -69,48 +83,58 @@ showQuestion()
 
 
 
-/* =========================
-   GRAPH ENGINE
-========================= */
+function submitExam(){
 
-function drawGraph(text){
+let score=0
 
-let canvas = document.getElementById("graph")
-if(!canvas) return
+questions.forEach((q,i)=>{
+if(answers[i]==q.answer) score++
+})
 
-canvas.width = 600
-canvas.height = 260
+alert("Score: "+score+" / "+questions.length)
 
-if(chart){
-chart.destroy()
-chart = null
 }
 
 
-/* CLEAN TEXT */
 
-text = text
+/* ======================
+   GRAPH ENGINE
+====================== */
+
+function drawGraph(text){
+
+let canvas=document.getElementById("graph")
+if(!canvas) return
+
+canvas.width=600
+canvas.height=260
+
+if(chart){
+chart.destroy()
+chart=null
+}
+
+text=text
 .replace(/\*/g,"")
 .replace(/²/g,"^2")
 .replace(/\s+/g," ")
 
 
 
-/* =========================
-   DETECT POINTS
-========================= */
 
-let coords = [...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
+/* ===== DETECT POINTS ===== */
 
-if(coords.length >= 2){
+let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
-let x1 = parseFloat(coords[0][1])
-let y1 = parseFloat(coords[0][2])
+if(coords.length>=2){
 
-let x2 = parseFloat(coords[1][1])
-let y2 = parseFloat(coords[1][2])
+let x1=parseFloat(coords[0][1])
+let y1=parseFloat(coords[0][2])
 
-chart = new Chart(canvas,{
+let x2=parseFloat(coords[1][1])
+let y2=parseFloat(coords[1][2])
+
+chart=new Chart(canvas,{
 type:'scatter',
 
 data:{
@@ -136,24 +160,19 @@ y:{min:-5,max:5}
 })
 
 return
-
 }
 
 
 
-/* =========================
-   DETECT HYPERBOLA
-========================= */
+/* ===== DETECT HYPERBOLA ===== */
 
-let hyper = text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)/i)
+let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)/i)
 
 if(!hyper) return
 
-let a = Math.sqrt(parseFloat(hyper[1]))
-let b = Math.sqrt(parseFloat(hyper[2]))
-let c = Math.sqrt(a*a + b*b)
-
-
+let a=Math.sqrt(parseFloat(hyper[1]))
+let b=Math.sqrt(parseFloat(hyper[2]))
+let c=Math.sqrt(a*a+b*b)
 
 let rightTop=[]
 let rightBottom=[]
@@ -174,7 +193,7 @@ leftBottom.push({x:-x,y:-y})
 
 
 
-chart = new Chart(canvas,{
+chart=new Chart(canvas,{
 type:'scatter',
 
 data:{
@@ -234,23 +253,23 @@ y:{min:-6,max:6,ticks:{stepSize:1}}
 
 
 
-/* DRAW LABEL */
+/* LABEL FOKUS */
 
 setTimeout(()=>{
 
-let ctx = chart.ctx
-let xScale = chart.scales.x
-let yScale = chart.scales.y
+let ctx=chart.ctx
+let xScale=chart.scales.x
+let yScale=chart.scales.y
 
 ctx.fillStyle="black"
 ctx.font="12px Arial"
 
-let px = xScale.getPixelForValue(c)
-let py = yScale.getPixelForValue(0)
+let px=xScale.getPixelForValue(c)
+let py=yScale.getPixelForValue(0)
 
 ctx.fillText("("+c+",0)",px+5,py-5)
 
-let px2 = xScale.getPixelForValue(-c)
+let px2=xScale.getPixelForValue(-c)
 
 ctx.fillText("("+(-c)+",0)",px2-40,py-5)
 
