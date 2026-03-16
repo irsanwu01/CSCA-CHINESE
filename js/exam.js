@@ -5,7 +5,7 @@ let chart=null
 
 async function loadSet(n){
 
-let res=await fetch("question/set"+n+".json")
+let res=await fetch("question/set0"+n+".json")
 questions=await res.json()
 
 current=0
