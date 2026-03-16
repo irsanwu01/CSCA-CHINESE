@@ -185,29 +185,30 @@ let canvas=document.getElementById("graph")
 if(!canvas) return
 
 
-// =======================
-// DETECT POINT P AND Q
-// =======================
+// hapus karakter * agar regex lebih stabil
+text=text.replace(/\*/g,"")
 
-let match=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
-if(!match){
+// cari semua koordinat (x,y)
+let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
+
+if(coords.length<2){
 
 canvas.style.display="none"
-
 return
 
 }
 
 canvas.style.display="block"
 
-let x1=parseFloat(match[1])
-let y1=parseFloat(match[2])
-let x2=parseFloat(match[3])
-let y2=parseFloat(match[4])
+let x1=parseFloat(coords[0][1])
+let y1=parseFloat(coords[0][2])
+
+let x2=parseFloat(coords[1][1])
+let y2=parseFloat(coords[1][2])
 
 
-// AUTO SCALE
+// auto zoom
 
 let minX=Math.min(x1,x2)-1
 let maxX=Math.max(x1,x2)+1
@@ -220,25 +221,20 @@ chart=new Chart(canvas,{
 type:'scatter',
 
 data:{
-datasets:[
-{
-label:"Line",
+datasets:[{
 data:[
 {x:x1,y:y1},
 {x:x2,y:y2}
 ],
 showLine:true,
 pointRadius:6
-}
-]
+}]
 },
 
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{
-legend:{display:false}
-},
+plugins:{legend:{display:false}},
 scales:{
 x:{min:minX,max:maxX},
 y:{min:minY,max:maxY}
