@@ -51,6 +51,8 @@ document.getElementById("title").innerText=
 
 document.getElementById("questionBox").innerHTML=q.hanzi
 
+drawGraph(q.graph)
+
 let html=""
 
 q.options.forEach((o,i)=>{
@@ -166,5 +168,41 @@ document.getElementById("qTimer").innerText=
 "Time on this question: "+questionTime+"s"
 
 },1000)
+
+}
+
+function drawGraph(graph){
+
+const canvas=document.getElementById("graph")
+
+if(!graph){
+
+canvas.style.display="none"
+return
+
+}
+
+canvas.style.display="block"
+
+new Chart(canvas,{
+
+type:"line",
+
+data:{
+labels:graph.x,
+datasets:[{
+data:graph.y,
+borderColor:"blue",
+borderWidth:2,
+fill:false
+}]
+},
+
+options:{
+responsive:false,
+plugins:{legend:{display:false}}
+}
+
+})
 
 }
