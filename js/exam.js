@@ -4,26 +4,104 @@ let answers={}
 let chart=null
 
 
+/* =============================
+   GET SET FROM URL
+============================= */
 
-async function loadSet(){
+const params = new URLSearchParams(window.location.search)
 
-let res=await fetch("./questions/set"+window.currentSet+".json")
-questions=await res.json()
+let setParam = parseInt(params.get("set")) || 1
 
-showQuestion()
+window.currentSet = setParam
+
+
+/* =============================
+   CHECK USER ACCESS
+============================= */
+
+async function checkAccess(){
+
+let { data:{ user } } = await db.auth.getUser()
+
+if(!user){
+
+alert("Please login first")
+
+location.href="login.html"
+
+return false
+
+}
+
+let { data } = await db
+.from("users")
+.select("premium")
+.eq("email", user.email)
+.single()
+
+if(window.currentSet>1 && !data?.premium){
+
+alert("Set "+window.currentSet+" is Premium")
+
+location.href="store.html"
+
+return false
+
+}
+
+return true
 
 }
 
 
+/* =============================
+   LOAD QUESTION SET
+============================= */
+
+async function loadSet(){
+
+let allowed = await checkAccess()
+
+if(!allowed) return
+
+try{
+
+let res = await fetch("./questions/set"+window.currentSet+".json")
+
+if(!res.ok){
+
+throw new Error("Question file missing")
+
+}
+
+questions = await res.json()
+
+showQuestion()
+
+}catch(e){
+
+console.error(e)
+
+document.getElementById("questionBox").innerHTML=
+"<b>Error loading questions</b>"
+
+}
+
+}
+
+
+/* =============================
+   SHOW QUESTION
+============================= */
 
 function showQuestion(){
 
-let q=questions[current]
+let q = questions[current]
 
-document.getElementById("title").innerText=
-"Question "+(current+1)+" / "+questions.length
+document.getElementById("title").innerText =
+"Set "+window.currentSet+" | Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML=
+document.getElementById("questionBox").innerHTML =
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
@@ -35,6 +113,9 @@ updateProgress()
 }
 
 
+/* =============================
+   OPTIONS
+============================= */
 
 function renderOptions(q){
 
@@ -42,7 +123,7 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
-let checked=answers[current]==i?"checked":""
+let checked = answers[current]==i ? "checked":""
 
 html+=`
 <label>
@@ -62,6 +143,9 @@ document.getElementById("options").innerHTML=html
 }
 
 
+/* =============================
+   NAVIGATION
+============================= */
 
 function next(){
 
@@ -71,8 +155,6 @@ showQuestion()
 }
 
 }
-
-
 
 function prev(){
 
@@ -84,15 +166,22 @@ showQuestion()
 }
 
 
+/* =============================
+   PROGRESS BAR
+============================= */
 
 function updateProgress(){
 
 let p=(current+1)/questions.length*100
+
 document.getElementById("progress").style.width=p+"%"
 
 }
 
 
+/* =============================
+   SUBMIT
+============================= */
 
 function submitExam(){
 
@@ -107,7 +196,6 @@ alert("Score: "+score+" / "+questions.length)
 }
 
 
-
 /* =============================
    GRAPH ENGINE
 ============================= */
@@ -115,34 +203,21 @@ alert("Score: "+score+" / "+questions.length)
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
+
 if(!canvas) return
-
-
-/* responsive size */
 
 canvas.width = canvas.parentElement.clientWidth
 canvas.height = 200
-
 
 if(chart){
 chart.destroy()
 chart=null
 }
 
-
-/* CLEAN TEXT */
-
 text=text
 .replace(/\*/g,"")
 .replace(/²/g,"^2")
 .replace(/\s+/g," ")
-
-
-
-
-/* =============================
-   DETECT POINTS (SOAL 14)
-============================= */
 
 let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
@@ -182,13 +257,11 @@ y:{min:-5,max:5}
 })
 
 return
+
 }
 
 
-
-/* =============================
-   DETECT HYPERBOLA (SOAL 15)
-============================= */
+/* HYPERBOLA DETECTION */
 
 let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)/i)
 
@@ -241,6 +314,7 @@ pointRadius:6
 }
 
 ]
+
 },
 
 options:{
@@ -255,34 +329,11 @@ y:{min:-6,max:6}
 
 })
 
-
-
-/* =============================
-   DRAW LABEL FOKUS
-============================= */
-
-setTimeout(()=>{
-
-let ctx=chart.ctx
-let xScale=chart.scales.x
-let yScale=chart.scales.y
-
-ctx.fillStyle="black"
-ctx.font="12px Arial"
-
-let px=xScale.getPixelForValue(c)
-let py=yScale.getPixelForValue(0)
-
-ctx.fillText("("+c+",0)",px+6,py-6)
-
-let px2=xScale.getPixelForValue(-c)
-
-ctx.fillText("("+(-c)+",0)",px2-35,py-6)
-
-},200)
-
 }
 
 
+/* =============================
+   START EXAM
+============================= */
 
 loadSet()
