@@ -51,7 +51,15 @@ document.getElementById("title").innerText=
 
 document.getElementById("questionBox").innerHTML=q.hanzi
 
+if(q.function){
 drawAutoGraph(q.function)
+}
+else if(q.visual){
+drawVisual(q.visual)
+}
+else{
+document.getElementById("graph").style.display="none"
+}
 
 document.getElementById("progress").style.width=
 ((current+1)/questions.length*100)+"%"
@@ -136,10 +144,8 @@ showLeaderboard()
 
 
 
-
-
 /* =========================
-   EXAM TIMER (60 MIN)
+   EXAM TIMER
 ========================= */
 
 let examTime=60*60
@@ -209,19 +215,12 @@ document.getElementById("qTimer").innerText=
 
 
 /* =========================
-   AUTO GRAPH ENGINE
+   GRAPH ENGINE
 ========================= */
 
 function drawAutoGraph(func){
 
 const canvas=document.getElementById("graph")
-
-if(!func){
-
-canvas.style.display="none"
-return
-
-}
 
 canvas.style.display="block"
 
@@ -264,12 +263,80 @@ fill:false
 
 options:{
 responsive:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{display:true},
-y:{display:true}
+plugins:{legend:{display:false}}
 }
 
+})
+
+}
+
+
+
+
+
+
+
+
+/* =========================
+   VISUAL ENGINE
+========================= */
+
+function drawVisual(v){
+
+const canvas=document.getElementById("graph")
+
+canvas.style.display="block"
+
+let xs=[]
+let ys=[]
+
+if(v.type=="circle"){
+
+for(let t=0;t<=360;t++){
+
+let rad=t*Math.PI/180
+
+let x=v.center[0]+v.r*Math.cos(rad)
+let y=v.center[1]+v.r*Math.sin(rad)
+
+xs.push(x)
+ys.push(y)
+
+}
+
+}
+
+if(v.type=="triangle"){
+
+xs=[v.points[0][0],v.points[1][0],v.points[2][0],v.points[0][0]]
+ys=[v.points[0][1],v.points[1][1],v.points[2][1],v.points[0][1]]
+
+}
+
+if(v.type=="vector"){
+
+xs=[0,v.v[0]]
+ys=[0,v.v[1]]
+
+}
+
+new Chart(canvas,{
+
+type:"line",
+
+data:{
+labels:xs,
+datasets:[{
+data:ys,
+borderColor:"red",
+borderWidth:2,
+fill:false
+}]
+},
+
+options:{
+responsive:false,
+plugins:{legend:{display:false}}
 }
 
 })
