@@ -30,6 +30,8 @@ renderOptions(q)
 
 drawGraph(q.hanzi)
 
+updateProgress()
+
 }
 
 
@@ -83,6 +85,15 @@ showQuestion()
 
 
 
+function updateProgress(){
+
+let p=(current+1)/questions.length*100
+document.getElementById("progress").style.width=p+"%"
+
+}
+
+
+
 function submitExam(){
 
 let score=0
@@ -97,28 +108,28 @@ alert("Score: "+score+" / "+questions.length)
 
 
 
-/* ======================
+/* =========================
    GRAPH ENGINE
-====================== */
+========================= */
 
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
-if(!canvas) return
 
 canvas.width=600
-canvas.height=260
+canvas.height=220
 
 if(chart){
 chart.destroy()
 chart=null
 }
 
+/* CLEAN TEXT */
+
 text=text
 .replace(/\*/g,"")
 .replace(/²/g,"^2")
 .replace(/\s+/g," ")
-
 
 
 
@@ -174,24 +185,20 @@ let a=Math.sqrt(parseFloat(hyper[1]))
 let b=Math.sqrt(parseFloat(hyper[2]))
 let c=Math.sqrt(a*a+b*b)
 
-let rightTop=[]
-let rightBottom=[]
-let leftTop=[]
-let leftBottom=[]
+let right=[]
+let left=[]
 
 for(let x=a+0.05;x<=6;x+=0.05){
 
 let y=b*Math.sqrt((x*x)/(a*a)-1)
 
-rightTop.push({x:x,y:y})
-rightBottom.push({x:x,y:-y})
+right.push({x:x,y:y})
+right.push({x:x,y:-y})
 
-leftTop.push({x:-x,y:y})
-leftBottom.push({x:-x,y:-y})
+left.push({x:-x,y:y})
+left.push({x:-x,y:-y})
 
 }
-
-
 
 chart=new Chart(canvas,{
 type:'scatter',
@@ -200,31 +207,17 @@ data:{
 datasets:[
 
 {
-data:rightTop,
-showLine:true,
-borderColor:"purple",
-pointRadius:0
+data:right,
+showLine:false,
+backgroundColor:"purple",
+pointRadius:2
 },
 
 {
-data:rightBottom,
-showLine:true,
-borderColor:"purple",
-pointRadius:0
-},
-
-{
-data:leftTop,
-showLine:true,
-borderColor:"purple",
-pointRadius:0
-},
-
-{
-data:leftBottom,
-showLine:true,
-borderColor:"purple",
-pointRadius:0
+data:left,
+showLine:false,
+backgroundColor:"purple",
+pointRadius:2
 },
 
 {
@@ -241,42 +234,12 @@ pointRadius:6
 
 options:{
 plugins:{legend:{display:false}},
-responsive:true,
-maintainAspectRatio:false,
 scales:{
-x:{min:-6,max:6,ticks:{stepSize:1}},
-y:{min:-6,max:6,ticks:{stepSize:1}}
+x:{min:-6,max:6},
+y:{min:-6,max:6}
 }
 }
 
 })
 
-
-
-/* LABEL FOKUS */
-
-setTimeout(()=>{
-
-let ctx=chart.ctx
-let xScale=chart.scales.x
-let yScale=chart.scales.y
-
-ctx.fillStyle="black"
-ctx.font="12px Arial"
-
-let px=xScale.getPixelForValue(c)
-let py=yScale.getPixelForValue(0)
-
-ctx.fillText("("+c+",0)",px+5,py-5)
-
-let px2=xScale.getPixelForValue(-c)
-
-ctx.fillText("("+(-c)+",0)",px2-40,py-5)
-
-},200)
-
 }
-
-
-
-loadSet()
