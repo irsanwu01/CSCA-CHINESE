@@ -162,39 +162,21 @@ alert("Score: "+percent+"%")
 
 
 
-function clearGraph(){
-
-if(chart){
-
-chart.destroy()
-
-chart=null
-
-}
-
-}
-
-
-
 function renderDiagram(text){
-
-clearGraph()
 
 let canvas=document.getElementById("graph")
 
-if(!canvas) return
+if(chart){
+chart.destroy()
+}
 
 
-// bersihkan format
+// bersihkan format *
 text=text.replace(/\*/g,"")
 
 
-
-// =====================
-// DETECT COORDINATES
-// =====================
-
-let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
+// cari koordinat
+let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
 if(coords.length>=2){
 
@@ -203,11 +185,6 @@ let y1=+coords[0][2]
 
 let x2=+coords[1][1]
 let y2=+coords[1][2]
-
-let minX=Math.min(x1,x2)-1
-let maxX=Math.max(x1,x2)+1
-let minY=Math.min(y1,y2)-1
-let maxY=Math.max(y1,y2)+1
 
 chart=new Chart(canvas,{
 type:'scatter',
@@ -223,25 +200,15 @@ pointRadius:6
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:minX,max:maxX},
-y:{min:minY,max:maxY}
-}
+maintainAspectRatio:false
 }
 })
 
 return
-
 }
 
 
-
-// =====================
-// DETECT HYPERBOLA
-// =====================
-
+// hiperbola
 let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
 if(hyper){
@@ -274,25 +241,13 @@ pointRadius:1
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-6,max:6},
-y:{min:-6,max:6}
-}
+maintainAspectRatio:false
 }
 })
 
-return
-
 }
 
-
-
-canvas.style.display="none"
-
 }
-
 
 
 loadSet(1)
