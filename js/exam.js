@@ -1,46 +1,19 @@
 let questions=[]
 let current=0
-let answers=[]
+let answers={}
+let chart=null
 
-let params=new URLSearchParams(location.search)
-let set=params.get("set") || 1
+async function loadSet(set){
 
-fetch("questions/set"+set+".json")
-.then(r=>r.json())
-.then(data=>{
+let res=await fetch("data/fixed_set"+set+".json")
+questions=await res.json()
 
-questions=data.slice(0,48)
-
-createNav()
-
-load()
-
-})
-
-function createNav(){
-
-let html=""
-
-for(let i=0;i<48;i++){
-
-html+=`<button id="nav${i}" onclick="goto(${i})">${i+1}</button>`
+current=0
+showQuestion()
 
 }
 
-document.getElementById("nav").innerHTML=html
-
-}
-
-function goto(i){
-
-current=i
-load()
-
-}
-
-function load(){
-
-startQuestionTimer()
+function showQuestion(){
 
 let q=questions[current]
 
@@ -49,20 +22,27 @@ document.getElementById("title").innerText=
 
 document.getElementById("questionBox").innerHTML=q.hanzi
 
-autoDetectGraph(q.hanzi)
+renderOptions(q)
 
-document.getElementById("progress").style.width=
-((current+1)/questions.length*100)+"%"
+renderDiagram(q.hanzi)
+
+}
+
+function renderOptions(q){
 
 let html=""
 
 q.options.forEach((o,i)=>{
 
-let disabled=""
+let checked=answers[current]==i?"checked":""
 
-if(answers[current]!=null) disabled="disabled"
-
-html+=`<button ${disabled} onclick="select(${i})">${o}</button><br>`
+html+=`
+<label>
+<input type="radio" name="opt" value="${i}" ${checked}
+onchange="saveAnswer(${i})">
+${o}
+</label><br>
+`
 
 })
 
@@ -70,25 +50,17 @@ document.getElementById("options").innerHTML=html
 
 }
 
-function select(i){
+function saveAnswer(v){
 
-if(answers[current]!=null) return
-
-answers[current]=i
-
-document.getElementById("nav"+current).classList.add("answered")
-
-next()
+answers[current]=v
 
 }
 
 function next(){
 
 if(current<questions.length-1){
-
 current++
-load()
-
+showQuestion()
 }
 
 }
@@ -96,189 +68,143 @@ load()
 function prev(){
 
 if(current>0){
-
 current--
-load()
-
+showQuestion()
 }
 
 }
 
 function submitExam(){
 
-let correct=0
+let score=0
 
 questions.forEach((q,i)=>{
-
-if(answers[i]==q.answer) correct++
-
+if(answers[i]==q.answer) score++
 })
 
-let score=Math.round(correct/questions.length*100)
+let percent=Math.round(score/questions.length*100)
 
-alert(
-"Correct: "+correct+
-"\nTotal: "+questions.length+
-"\nScore: "+score+"%"
-)
+alert("Score: "+percent+"%")
 
 }
 
+function clearGraph(){
 
-
-
-
-/* =========================
-   EXAM TIMER
-========================= */
-
-let examTime=60*60
-
-setInterval(()=>{
-
-let m=Math.floor(examTime/60)
-let s=examTime%60
-
-document.getElementById("timer").innerText=
-"Exam Time: "+m+":"+(s<10?"0"+s:s)
-
-examTime--
-
-if(examTime<0){
-
-alert("Time is up")
-
-submitExam()
+if(chart){
+chart.destroy()
+chart=null
+}
 
 }
 
-},1000)
+function renderDiagram(text){
 
-
-
-
-
-/* =========================
-   QUESTION TIMER
-========================= */
-
-let questionTime=0
-let qTimer
-
-function startQuestionTimer(){
-
-questionTime=0
-
-clearInterval(qTimer)
-
-qTimer=setInterval(()=>{
-
-questionTime++
-
-document.getElementById("qTimer").innerText=
-"Time on this question: "+questionTime+"s"
-
-},1000)
-
-}
-
-
-
-
-
-/* =========================
-   AUTO GRAPH DETECTOR
-========================= */
-
-function autoDetectGraph(text){
+clearGraph()
 
 const canvas=document.getElementById("graph")
 
-let func=null
+if(!canvas) return
 
-/* detect parabola */
+// DETECT POINT DISTANCE
 
-if(text.includes("x²") || text.includes("x^2")){
+let match=text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
 
-func="x*x"
+if(match){
 
+let x1=parseFloat(match[1])
+let y1=parseFloat(match[2])
+let x2=parseFloat(match[3])
+let y2=parseFloat(match[4])
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+label:'Points',
+data:[
+{x:x1,y:y1},
+{x:x2,y:y2}
+],
+showLine:true
+}]
+},
+options:{
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-5,max:5},
+y:{min:-5,max:5}
 }
-
-/* detect linear */
-
-if(text.includes("3x")){
-
-func="3*x"
-
 }
+})
 
-/* detect sin */
-
-if(text.includes("sin")){
-
-func="Math.sin(x)"
-
-}
-
-/* detect cos */
-
-if(text.includes("cos")){
-
-func="Math.cos(x)"
-
-}
-
-if(!func){
-
-canvas.style.display="none"
 return
-
 }
 
-canvas.style.display="block"
+// DETECT PARABOLA
 
-let xs=[]
-let ys=[]
+let parabola=text.match(/y\s*=\s*([-\d]*)x²\s*([+\-]\s*\d+)?x?\s*([+\-]\s*\d+)?/)
+
+if(parabola){
+
+let a=parseFloat(parabola[1]||1)
+let b=parseFloat(parabola[2]||0)
+let c=parseFloat(parabola[3]||0)
+
+let points=[]
 
 for(let x=-10;x<=10;x+=0.5){
 
-xs.push(x)
-
-let y
-
-try{
-
-y=eval(func.replace(/x/g,"("+x+")"))
-
-}catch{
-
-y=null
+let y=a*x*x + b*x + c
+points.push({x:x,y:y})
 
 }
 
-ys.push(y)
-
-}
-
-new Chart(canvas,{
-
-type:"line",
-
+chart=new Chart(canvas,{
+type:'scatter',
 data:{
-labels:xs,
 datasets:[{
-data:ys,
-borderColor:"blue",
-borderWidth:2,
-fill:false
+data:points,
+showLine:true
 }]
 },
-
 options:{
-responsive:false,
 plugins:{legend:{display:false}}
 }
+})
 
+return
+}
+
+// DETECT LINE
+
+let line=text.match(/y\s*=\s*([-\d\.]+)x\s*([+\-]\s*\d+)?/)
+
+if(line){
+
+let m=parseFloat(line[1])
+let b=parseFloat(line[2]||0)
+
+let points=[]
+
+for(let x=-10;x<=10;x++){
+
+let y=m*x + b
+points.push({x:x,y:y})
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:points,
+showLine:true
+}]
+}
 })
 
 }
+
+}
+
+loadSet(1)
