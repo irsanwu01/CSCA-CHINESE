@@ -176,6 +176,18 @@ chart=null
 
 
 
+function cleanMath(text){
+
+text=text.replace(/\*/g,"")
+text=text.replace(/\s+/g," ")
+text=text.replace(/\^2/g,"²")
+
+return text
+
+}
+
+
+
 function renderDiagram(text){
 
 clearGraph()
@@ -184,12 +196,12 @@ let canvas=document.getElementById("graph")
 
 if(!canvas) return
 
+text=cleanMath(text)
 
-text=text.replace(/\*/g,"")
 
 
 // =================
-// DETECT POINTS
+// TWO POINTS
 // =================
 
 let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
@@ -272,7 +284,8 @@ pointRadius:1
 },
 options:{
 responsive:true,
-maintainAspectRatio:false
+maintainAspectRatio:false,
+plugins:{legend:{display:false}}
 }
 })
 
@@ -302,6 +315,47 @@ pts.push({
 x:r*Math.cos(rad),
 y:r*Math.sin(rad)
 })
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:pts,
+showLine:true,
+pointRadius:0
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:false}}
+}
+})
+
+return
+
+}
+
+
+
+// =================
+// LINE
+// =================
+
+let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
+
+if(line){
+
+let a=parseFloat(line[1]||1)
+let b=parseFloat(line[2]||0)
+
+let pts=[]
+
+for(let x=-10;x<=10;x++){
+
+pts.push({x:x,y:a*x+b})
 
 }
 
