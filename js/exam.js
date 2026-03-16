@@ -1,46 +1,66 @@
-let questions = []
-let current = 0
-let answers = {}
-let chart = null
+let questions=[]
+let current=0
+let answers={}
+let chart=null
+
+let timer=null
+let seconds=0
+
 
 async function loadSet(){
 
-try{
+let res=await fetch("./questions/set1.json")
+questions=await res.json()
 
-let res = await fetch("./questions/set1.json")
-
-questions = await res.json()
-
-}catch(e){
-
-console.log("JSON load error:",e)
-questions = []
-
-}
-
-if(questions.length === 0){
-
-document.getElementById("questionBox").innerHTML =
-"Questions not loaded"
-
-return
-
-}
+startTimer()
 
 showQuestion()
 
 }
 
 
+function startTimer(){
+
+let m=parseInt(document.getElementById("examTime").value)
+
+seconds=m*60
+
+if(timer) clearInterval(timer)
+
+timer=setInterval(function(){
+
+seconds--
+
+let min=Math.floor(seconds/60)
+let sec=seconds%60
+
+if(sec<10) sec="0"+sec
+
+document.getElementById("timer").innerText="Time: "+min+":"+sec
+
+if(seconds<=0){
+
+clearInterval(timer)
+
+submitExam()
+
+}
+
+},1000)
+
+}
+
+
+
 function showQuestion(){
 
-let q = questions[current]
+let q=questions[current]
 
-document.getElementById("title").innerText =
-"Question " + (current+1) + " / " + questions.length
+document.getElementById("title").innerText=
+"Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML =
-"<b>"+(current+1)+".</b> " + q.hanzi
+document.getElementById("questionBox").innerHTML=
+"<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
 
@@ -51,68 +71,72 @@ updateProgress()
 }
 
 
+
 function renderOptions(q){
 
-let html = ""
+let html=""
 
 q.options.forEach((o,i)=>{
 
-html += `
+let checked=answers[current]==i?"checked":""
+
+html+=`
 <label>
-<input type="radio" name="opt" onchange="answers[current]=${i}">
+<input type="radio" name="opt"
+value="${i}" ${checked}
+onchange="answers[current]=${i}">
 ${o}
 </label><br>
 `
 
 })
 
-document.getElementById("options").innerHTML = html
+document.getElementById("options").innerHTML=html
 
 }
+
 
 
 function next(){
 
-if(current < questions.length-1){
+if(current<questions.length-1){
 
 current++
-
 showQuestion()
 
 }
 
 }
-
 
 function prev(){
 
-if(current > 0){
+if(current>0){
 
 current--
-
 showQuestion()
 
 }
 
 }
+
 
 
 function updateProgress(){
 
-let p = (current+1)/questions.length*100
-
-document.getElementById("progress").style.width = p+"%"
+let p=(current+1)/questions.length*100
+document.getElementById("progress").style.width=p+"%"
 
 }
 
 
+
 function submitExam(){
 
-let score = 0
+let score=0
 
 questions.forEach((q,i)=>{
 
-if(answers[i] == q.answer) score++
+if(answers[i]==q.answer) score++
 
 })
 
@@ -121,29 +145,32 @@ alert("Score: "+score+"/"+questions.length)
 }
 
 
+
 function drawGraph(text){
 
-try{
-
-let canvas = document.getElementById("graph")
+let canvas=document.getElementById("graph")
 
 if(chart) chart.destroy()
 
-text = text.replace(/\*/g,"")
+text=text.replace(/\*/g,"")
 
-// detect coordinates
 
-let coords = [...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
-if(coords.length >= 2){
+// ============================
+// DETECT TWO POINTS
+// ============================
 
-let x1 = parseFloat(coords[0][1])
-let y1 = parseFloat(coords[0][2])
+let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
-let x2 = parseFloat(coords[1][1])
-let y2 = parseFloat(coords[1][2])
+if(coords.length>=2){
 
-chart = new Chart(canvas,{
+let x1=parseFloat(coords[0][1])
+let y1=parseFloat(coords[0][2])
+
+let x2=parseFloat(coords[1][1])
+let y2=parseFloat(coords[1][2])
+
+chart=new Chart(canvas,{
 type:'scatter',
 data:{
 datasets:[{
@@ -152,12 +179,14 @@ data:[
 {x:x2,y:y2}
 ],
 showLine:true,
-pointRadius:6
+pointRadius:6,
+borderColor:"blue"
 }]
 },
 options:{
 responsive:true,
-maintainAspectRatio:false
+maintainAspectRatio:false,
+plugins:{legend:{display:false}}
 }
 })
 
@@ -165,53 +194,82 @@ return
 }
 
 
-// detect hyperbola
 
-let hyper = text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
+// ============================
+// DETECT HYPERBOLA
+// ============================
+
+let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
 if(hyper){
 
-let a = Math.sqrt(parseFloat(hyper[1]))
-let b = Math.sqrt(parseFloat(hyper[2]))
+let a=Math.sqrt(parseFloat(hyper[1]))
+let b=Math.sqrt(parseFloat(hyper[2]))
 
-let pts = []
+let right=[]
+let left=[]
 
-for(let x=-6;x<=6;x+=0.1){
+for(let x=a+0.01;x<=6;x+=0.05){
 
-let y = Math.sqrt((x*x)/(a*a)-1)*b
+let y=b*Math.sqrt((x*x)/(a*a)-1)
 
-if(!isNaN(y)){
+right.push({x:x,y:y})
+right.push({x:x,y:-y})
 
-pts.push({x:x,y:y})
-pts.push({x:x,y:-y})
+left.push({x:-x,y:y})
+left.push({x:-x,y:-y})
 
 }
 
-}
+let c=Math.sqrt(a*a+b*b)
 
-chart = new Chart(canvas,{
+chart=new Chart(canvas,{
 type:'scatter',
 data:{
-datasets:[{
-data:pts,
-pointRadius:1
-}]
+datasets:[
+
+{
+data:right,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
 },
+
+{
+data:left,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:[
+{x:c,y:0},
+{x:-c,y:0}
+],
+pointRadius:6,
+backgroundColor:"blue"
+}
+
+]
+},
+
 options:{
 responsive:true,
-maintainAspectRatio:false
+maintainAspectRatio:false,
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-6,max:6},
+y:{min:-6,max:6}
 }
+}
+
 })
 
 }
 
-}catch(e){
-
-console.log("Graph error:",e)
-
 }
 
-}
 
 
 loadSet()
