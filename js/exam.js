@@ -1,3 +1,5 @@
+console.log("exam.js loaded")
+
 let questions = []
 let current = 0
 let answers = {}
@@ -9,40 +11,43 @@ let all = []
 
 for(let i=1;i<=10;i++){
 
-let names = [
-"./questions/set"+i+".json",
-"./questions/set0"+i+".json"
+let files = [
+`./questions/set${i}.json`,
+`./questions/set0${i}.json`
 ]
 
-let loaded=false
+let loaded = false
 
-for(let file of names){
+for(let file of files){
 
 try{
 
 let res = await fetch(file)
 
-if(res.ok){
+if(!res.ok) continue
 
-let data = await res.json()
+let text = await res.text()
+
+let data = JSON.parse(text)
 
 all = all.concat(data)
 
-loaded=true
+console.log("Loaded:",file)
 
-console.log("loaded",file)
-
+loaded = true
 break
 
-}
+}catch(e){
 
-}catch(e){}
+console.log("Failed:",file)
+
+}
 
 }
 
 if(!loaded){
 
-console.log("set not found",i)
+console.log("Set not found:",i)
 
 }
 
@@ -50,8 +55,14 @@ console.log("set not found",i)
 
 questions = all
 
-current = 0
+if(questions.length==0){
 
+console.error("No questions loaded")
+return
+
+}
+
+current = 0
 showQuestion()
 
 }
@@ -130,7 +141,11 @@ function updateProgress(){
 
 let p = (current+1)/questions.length*100
 
-document.getElementById("progress").style.width = p+"%"
+let bar = document.getElementById("progress")
+
+if(bar){
+bar.style.width = p+"%"
+}
 
 }
 
@@ -140,7 +155,9 @@ let score = 0
 
 questions.forEach((q,i)=>{
 
-if(answers[i]==q.answer) score++
+if(answers[i]==q.answer){
+score++
+}
 
 })
 
