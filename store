@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>CSCA Exam Packages</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:20px;
+max-width:720px;
+}
+
+.package{
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:10px;
+border-radius:8px;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+button{
+padding:8px 15px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+
+<div id="userEmail"></div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<h2>Pilih Paket Soal</h2>
+
+<div id="packages"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+
+async function checkLogin(){
+
+let {data}=await window.db.auth.getSession()
+
+if(!data.session){
+
+window.location="login.html"
+return
+
+}
+
+document.getElementById("userEmail").innerText=data.session.user.email
+
+}
+
+checkLogin()
+
+
+
+function loadPackages(){
+
+let html=""
+
+for(let i=1;i<=10;i++){
+
+let price=i==1 ? "FREE" : "Rp20.000"
+
+html+=`
+
+<div class="package">
+
+<h3>Set ${i}</h3>
+
+<p>48 soal matematika CSCA</p>
+
+<p>Harga: ${price}</p>
+
+${i==1
+? `<button onclick="openSet(${i})">Mulai</button>`
+: `<button onclick="buySet(${i})">Beli Paket</button>`
+}
+
+</div>
+
+`
+
+}
+
+document.getElementById("packages").innerHTML=html
+
+}
+
+loadPackages()
+
+
+
+function openSet(set){
+
+window.location="exam.html?set="+set
+
+}
+
+
+
+function buySet(set){
+
+alert("Silakan bayar Rp20.000 untuk Set "+set)
+
+}
+
+</script>
+
+</body>
+
+</html>
