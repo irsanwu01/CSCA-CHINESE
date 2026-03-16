@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
 <title>CSCA Chinese Mathematics Exam</title>
-
-<script src="js/exam.js" defer></script>
 
 <style>
 
 body{
 font-family:Arial;
-max-width:900px;
-margin:auto;
-padding:20px;
+margin:40px;
 }
 
 #questionBox{
@@ -23,17 +18,28 @@ margin-bottom:20px;
 
 #options label{
 display:block;
-margin:6px 0;
+margin:10px 0;
 }
 
 button{
-padding:8px 14px;
-margin:5px;
+padding:8px 15px;
+margin:10px 5px;
+}
+
+#timer{
+color:red;
+font-size:20px;
+margin-top:5px;
+}
+
+#graph{
+margin-top:30px;
 }
 
 #progressBar{
+width:100%;
+background:#ccc;
 height:10px;
-background:#ddd;
 margin-top:20px;
 }
 
@@ -43,37 +49,32 @@ background:#4caf50;
 width:0%;
 }
 
-#timer{
-font-size:18px;
-margin-bottom:10px;
-color:red;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<h2 id="title">CSCA Chinese Mathematics Exam</h2>
+<h2 id="title">Question</h2>
 
-<label>Exam Time:</label>
-
+Exam Time:
 <select id="examTime">
-
 <option value="30">30 minutes</option>
 <option value="45">45 minutes</option>
 <option value="60" selected>60 minutes</option>
 <option value="75">75 minutes</option>
 <option value="90">90 minutes</option>
-
 </select>
 
 <div id="timer"></div>
 
+<br>
+
 <div id="questionBox"></div>
 
 <div id="options"></div>
+
+<canvas id="graph" width="500" height="350"></canvas>
 
 <br>
 
@@ -84,6 +85,9 @@ color:red;
 <div id="progressBar">
 <div id="progress"></div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/exam.js"></script>
 
 </body>
 </html>
