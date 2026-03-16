@@ -1,34 +1,64 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+
 <meta charset="UTF-8">
-<title>CSCA Training System</title>
-<link rel="stylesheet" href="css/style.css">
+<title>CSCA Exam</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:20px;
+max-width:700px;
+}
+
+#graph{
+width:100%;
+height:220px;
+margin-top:10px;
+border:1px solid #ccc;
+}
+
+#progressBar{
+width:100%;
+height:8px;
+background:#ccc;
+margin-top:20px;
+}
+
+#progress{
+height:8px;
+background:#4CAF50;
+width:0%;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h1>CSCA Training System</h1>
+<h2 id="title"></h2>
 
-<div id="menu">
-<button onclick="startSet(1)">Start Set 1</button>
-<button onclick="startSet(2)">Start Set 2</button>
-<button onclick="startSet(3)">Start Set 3</button>
-<button onclick="startSet(4)">Start Set 4</button>
-<button onclick="startSet(5)">Start Set 5</button>
-<button onclick="startSet(6)">Start Set 6</button>
-<button onclick="startSet(7)">Start Set 7</button>
-<button onclick="startSet(8)">Start Set 8</button>
-<button onclick="startSet(9)">Start Set 9</button>
-<button onclick="startSet(10)">Start Set 10</button>
+<div id="questionBox"></div>
+
+<div id="options"></div>
+
+<canvas id="graph"></canvas>
+
+<br>
+
+<button onclick="prev()">Prev</button>
+<button onclick="next()">Next</button>
+<button onclick="submitExam()">Submit</button>
+
+<div id="progressBar">
+<div id="progress"></div>
 </div>
 
-<script>
-function startSet(set){
-    localStorage.setItem("examSet", set);
-    window.location.href = "exam.html";
-}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/exam.js"></script>
 
 </body>
 </html>
