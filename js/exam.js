@@ -1,93 +1,118 @@
-let questions=[]
-let current=0
-let answers={}
-let chart=null
+let questions = []
+let current = 0
+let answers = {}
+let chart = null
 
-async function loadSet(n){
+async function loadSet(){
 
-let res=await fetch("./questions/set"+n+".json")
-questions=await res.json()
+try{
+
+let res = await fetch("./questions/set1.json")
+
+questions = await res.json()
+
+}catch(e){
+
+console.log("JSON load error:",e)
+questions = []
+
+}
+
+if(questions.length === 0){
+
+document.getElementById("questionBox").innerHTML =
+"Questions not loaded"
+
+return
+
+}
 
 showQuestion()
 
 }
 
+
 function showQuestion(){
 
-let q=questions[current]
+let q = questions[current]
 
-document.getElementById("title").innerText=
-"Question "+(current+1)+" / "+questions.length
+document.getElementById("title").innerText =
+"Question " + (current+1) + " / " + questions.length
 
-document.getElementById("questionBox").innerHTML=
-"<b>"+(current+1)+".</b> "+q.hanzi
+document.getElementById("questionBox").innerHTML =
+"<b>"+(current+1)+".</b> " + q.hanzi
 
 renderOptions(q)
 
-drawDiagram(q.hanzi)
+drawGraph(q.hanzi)
 
 updateProgress()
 
 }
 
+
 function renderOptions(q){
 
-let html=""
+let html = ""
 
 q.options.forEach((o,i)=>{
 
-let checked=answers[current]==i?"checked":""
-
-html+=`
+html += `
 <label>
-<input type="radio" name="opt" value="${i}" ${checked}
-onchange="answers[current]=${i}">
+<input type="radio" name="opt" onchange="answers[current]=${i}">
 ${o}
 </label><br>
 `
 
 })
 
-document.getElementById("options").innerHTML=html
+document.getElementById("options").innerHTML = html
 
 }
+
 
 function next(){
 
-if(current<questions.length-1){
+if(current < questions.length-1){
 
 current++
+
 showQuestion()
 
 }
 
 }
+
 
 function prev(){
 
-if(current>0){
+if(current > 0){
 
 current--
+
 showQuestion()
 
 }
 
 }
 
+
 function updateProgress(){
 
-let p=(current+1)/questions.length*100
-document.getElementById("progress").style.width=p+"%"
+let p = (current+1)/questions.length*100
+
+document.getElementById("progress").style.width = p+"%"
 
 }
 
+
 function submitExam(){
 
-let score=0
+let score = 0
 
 questions.forEach((q,i)=>{
 
-if(answers[i]==q.answer) score++
+if(answers[i] == q.answer) score++
 
 })
 
@@ -95,30 +120,30 @@ alert("Score: "+score+"/"+questions.length)
 
 }
 
-function drawDiagram(text){
 
-let canvas=document.getElementById("graph")
+function drawGraph(text){
 
-if(!canvas) return
+try{
+
+let canvas = document.getElementById("graph")
 
 if(chart) chart.destroy()
 
-text=text.replace(/\*/g,"")
+text = text.replace(/\*/g,"")
 
+// detect coordinates
 
-// cari koordinat
+let coords = [...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
-let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
+if(coords.length >= 2){
 
-if(coords.length>=2){
+let x1 = parseFloat(coords[0][1])
+let y1 = parseFloat(coords[0][2])
 
-let x1=parseFloat(coords[0][1])
-let y1=parseFloat(coords[0][2])
+let x2 = parseFloat(coords[1][1])
+let y2 = parseFloat(coords[1][2])
 
-let x2=parseFloat(coords[1][1])
-let y2=parseFloat(coords[1][2])
-
-chart=new Chart(canvas,{
+chart = new Chart(canvas,{
 type:'scatter',
 data:{
 datasets:[{
@@ -140,20 +165,20 @@ return
 }
 
 
-// hiperbola
+// detect hyperbola
 
-let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
+let hyper = text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
 if(hyper){
 
-let a=Math.sqrt(parseFloat(hyper[1]))
-let b=Math.sqrt(parseFloat(hyper[2]))
+let a = Math.sqrt(parseFloat(hyper[1]))
+let b = Math.sqrt(parseFloat(hyper[2]))
 
-let pts=[]
+let pts = []
 
 for(let x=-6;x<=6;x+=0.1){
 
-let y=Math.sqrt((x*x)/(a*a)-1)*b
+let y = Math.sqrt((x*x)/(a*a)-1)*b
 
 if(!isNaN(y)){
 
@@ -164,7 +189,7 @@ pts.push({x:x,y:-y})
 
 }
 
-chart=new Chart(canvas,{
+chart = new Chart(canvas,{
 type:'scatter',
 data:{
 datasets:[{
@@ -180,6 +205,13 @@ maintainAspectRatio:false
 
 }
 
+}catch(e){
+
+console.log("Graph error:",e)
+
 }
 
-loadSet(1)
+}
+
+
+loadSet()
