@@ -7,7 +7,7 @@ let chart=null
 
 async function loadSet(){
 
-let res=await fetch("./question/set"+window.currentSet+".json")
+let res=await fetch("./questions/set"+window.currentSet+".json")
 questions=await res.json()
 
 showQuestion()
