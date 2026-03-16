@@ -1,174 +1,83 @@
-let questions = []
-let current = 0
-let answers = {}
-let chart = null
+<!DOCTYPE html>
+<html>
+<head>
 
-async function loadSet(n){
+<meta charset="UTF-8">
+<title>CSCA Chinese Mathematics Exam</title>
 
-let file = "./questions/set"+n+".json"
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/exam.js" defer></script>
 
-console.log("loading",file)
+<style>
 
-let res = await fetch(file)
-
-questions = await res.json()
-
-current = 0
-
-showQuestion()
-
+body{
+font-family:Arial;
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-function showQuestion(){
-
-let q = questions[current]
-
-document.getElementById("title").innerText =
-"Question "+(current+1)+" / "+questions.length
-
-document.getElementById("questionBox").innerHTML = q.hanzi
-
-renderOptions(q)
-
-renderDiagram(q.hanzi)
-
-updateProgress()
-
+#title{
+font-size:22px;
+margin-bottom:15px;
 }
 
-function renderOptions(q){
-
-let html=""
-
-q.options.forEach((o,i)=>{
-
-let checked = answers[current]==i ? "checked" : ""
-
-html += `
-<label>
-<input type="radio" name="opt"
-value="${i}" ${checked}
-onchange="saveAnswer(${i})">
-${o}
-</label>
-`
-
-})
-
-document.getElementById("options").innerHTML = html
-
+#questionBox{
+font-size:20px;
+margin-bottom:20px;
 }
 
-function saveAnswer(v){
-
-answers[current] = v
-
+#options label{
+display:block;
+margin:6px 0;
 }
 
-function next(){
-
-if(current < questions.length-1){
-
-current++
-showQuestion()
-
+button{
+padding:8px 14px;
+margin:5px;
+cursor:pointer;
 }
 
+#graph{
+margin-top:20px;
+border:1px solid #ccc;
 }
 
-function prev(){
-
-if(current > 0){
-
-current--
-showQuestion()
-
+#progressBar{
+height:10px;
+background:#ddd;
+margin-top:20px;
 }
 
+#progress{
+height:10px;
+background:#4caf50;
+width:0%;
 }
 
-function updateProgress(){
+</style>
 
-let p = (current+1)/questions.length*100
+</head>
 
-document.getElementById("progress").style.width = p+"%"
+<body>
 
-}
+<h2 id="title">CSCA Chinese Mathematics Exam</h2>
 
-function submitExam(){
+<div id="questionBox"></div>
 
-let score = 0
+<div id="options"></div>
 
-questions.forEach((q,i)=>{
+<canvas id="graph" width="420" height="300"></canvas>
 
-if(answers[i]==q.answer){
+<br>
 
-score++
+<button onclick="prev()">Prev</button>
+<button onclick="next()">Next</button>
+<button onclick="submitExam()">Submit</button>
 
-}
+<div id="progressBar">
+<div id="progress"></div>
+</div>
 
-})
-
-let percent = Math.round(score/questions.length*100)
-
-alert("Score: "+percent+"%")
-
-}
-
-function clearGraph(){
-
-if(chart){
-
-chart.destroy()
-chart=null
-
-}
-
-}
-
-function renderDiagram(text){
-
-clearGraph()
-
-const canvas = document.getElementById("graph")
-
-if(!canvas) return
-
-let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
-
-if(p){
-
-let x1 = parseFloat(p[1])
-let y1 = parseFloat(p[2])
-let x2 = parseFloat(p[3])
-let y2 = parseFloat(p[4])
-
-chart = new Chart(canvas,{
-
-type:'scatter',
-
-data:{
-datasets:[{
-data:[
-{x:x1,y:y1},
-{x:x2,y:y2}
-],
-showLine:true
-}]
-},
-
-options:{
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
-}
-}
-
-})
-
-}
-
-}
-
-loadSet(1)
+</body>
+</html>
