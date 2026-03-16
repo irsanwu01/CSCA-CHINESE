@@ -197,8 +197,8 @@ pointRadius:6
 options:{
 plugins:{legend:{display:false}},
 scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
+x:{min:-2,max:4},
+y:{min:0,max:4}
 }
 }
 
