@@ -7,6 +7,7 @@ let timer=null
 let seconds=0
 
 
+
 async function loadSet(){
 
 let res=await fetch("./questions/set1.json")
@@ -16,6 +17,7 @@ startTimer()
 showQuestion()
 
 }
+
 
 
 function startTimer(){
@@ -130,6 +132,40 @@ alert("Score: "+score+" / "+questions.length)
 
 
 
+/* =============================
+   LABEL PLUGIN
+============================= */
+
+const labelPlugin={
+id:"labelPlugin",
+afterDatasetsDraw(chart){
+
+const {ctx}=chart
+
+chart.data.datasets.forEach((dataset,i)=>{
+
+if(!dataset.labels) return
+
+let meta=chart.getDatasetMeta(i)
+
+meta.data.forEach((point,index)=>{
+
+let label=dataset.labels[index]
+
+ctx.fillStyle="black"
+ctx.font="12px Arial"
+
+ctx.fillText(label,point.x+6,point.y-6)
+
+})
+
+})
+
+}
+}
+
+
+
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
@@ -142,14 +178,7 @@ chart=null
 
 text=text.replace(/\*/g,"")
 
-
-
-/* ======================
-   HYPERBOLA
-====================== */
-
 let hyper=text.match(/x.?2\/(\d+)\s*-\s*y.?2\/(\d+)/i)
-
 if(!hyper) return
 
 let a=Math.sqrt(parseFloat(hyper[1]))
@@ -175,7 +204,8 @@ leftBottom.push({x:-x,y:-y})
 }
 
 
-/* ASYMPTOTE */
+
+/* asymptote */
 
 let asym1=[]
 let asym2=[]
@@ -188,15 +218,15 @@ asym2.push({x:x,y:-(b/a)*x})
 }
 
 
-
 chart=new Chart(canvas,{
 type:'scatter',
+
+plugins:[labelPlugin],
 
 data:{
 datasets:[
 
 {
-label:"hyperbola",
 data:rightTop,
 showLine:true,
 borderColor:"purple",
@@ -225,7 +255,6 @@ pointRadius:0
 },
 
 {
-label:"asymptote",
 data:asym1,
 showLine:true,
 borderColor:"#3498db",
@@ -242,11 +271,16 @@ pointRadius:0
 },
 
 {
-label:"focus",
 data:[
 {x:c,y:0},
 {x:-c,y:0}
 ],
+
+labels:[
+"("+c+",0)",
+"("+(-c)+",0)"
+],
+
 backgroundColor:"blue",
 pointRadius:6
 }
@@ -263,17 +297,10 @@ responsive:true,
 maintainAspectRatio:false,
 
 scales:{
-x:{
-min:-6,
-max:6,
-ticks:{stepSize:1}
-},
-y:{
-min:-6,
-max:6,
-ticks:{stepSize:1}
+x:{min:-6,max:6,ticks:{stepSize:1}},
+y:{min:-6,max:6,ticks:{stepSize:1}}
 }
-}
+
 }
 
 })
