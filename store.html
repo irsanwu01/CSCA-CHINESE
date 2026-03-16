@@ -1,134 +1,42 @@
-<!DOCTYPE html>
-<html>
+async function buySet(set){
 
-<head>
+alert("Payment simulation success")
 
-<meta charset="UTF-8">
-<title>CSCA Exam Packages</title>
+let { data:{ user } } = await db.auth.getUser()
 
-<style>
+let { data } = await db
+.from("users")
+.select("purchased_sets")
+.eq("email", user.email)
+.single()
 
-body{
-font-family:Arial;
-margin:20px;
-max-width:720px;
-}
+let owned = data?.purchased_sets || []
 
-.package{
-border:1px solid #ddd;
-padding:15px;
-margin-bottom:10px;
-border-radius:8px;
-}
+owned.push(set)
 
-.topbar{
-display:flex;
-justify-content:space-between;
-margin-bottom:20px;
-}
+await db
+.from("users")
+.update({purchased_sets:owned})
+.eq("email",user.email)
 
-button{
-padding:8px 15px;
-cursor:pointer;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="topbar">
-
-<div id="userEmail"></div>
-
-<button onclick="logout()">Logout</button>
-
-</div>
-
-<h2>Pilih Paket Soal</h2>
-
-<div id="packages"></div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="js/config.js"></script>
-<script src="js/auth.js"></script>
-
-<script>
-
-async function checkLogin(){
-
-let {data}=await window.db.auth.getSession()
-
-if(!data.session){
-
-window.location="login.html"
-return
-
-}
-
-document.getElementById("userEmail").innerText=data.session.user.email
-
-}
-
-checkLogin()
-
-
-
-function loadPackages(){
-
-let html=""
-
-for(let i=1;i<=10;i++){
-
-let price=i==1 ? "FREE" : "Rp20.000"
-
-html+=`
-
-<div class="package">
-
-<h3>Set ${i}</h3>
-
-<p>48 soal matematika CSCA</p>
-
-<p>Harga: ${price}</p>
-
-${i==1
-? `<button onclick="openSet(${i})">Mulai</button>`
-: `<button onclick="buySet(${i})">Beli Paket</button>`
-}
-
-</div>
-
-`
-
-}
-
-document.getElementById("packages").innerHTML=html
-
-}
-
-loadPackages()
-
-
-
-function openSet(set){
-
-window.location="exam.html?set="+set
+alert("Set unlocked!")
 
 }
 
 
+async function bundle(){
 
-function buySet(set){
+alert("Bundle payment success")
 
-alert("Silakan bayar Rp20.000 untuk Set "+set)
+let { data:{ user } } = await db.auth.getUser()
+
+let bundle=[2,3,4,5,6]
+
+await db
+.from("users")
+.update({purchased_sets:bundle})
+.eq("email",user.email)
+
+alert("5 sets unlocked!")
 
 }
-
-</script>
-
-</body>
-
-</html>
