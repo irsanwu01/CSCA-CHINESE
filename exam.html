@@ -1,47 +1,46 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="UTF-8">
-<title>CSCA Prep Exam</title>
+<title>Math Exam</title>
 
-<!-- GRAPH ENGINE -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="js/config.js"></script>
+<script src="js/exam.js" defer></script>
 
 <style>
 
 body{
 font-family:Arial;
-margin:40px;
-background:#fafafa;
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-h2{
-margin-bottom:10px;
+#questionBox{
+font-size:20px;
+margin-bottom:15px;
 }
 
-#timer{
-font-size:24px;
-color:red;
-margin-bottom:5px;
+#options label{
+display:block;
+margin:6px 0;
 }
 
-#qTimer{
-font-size:14px;
-color:#555;
-margin-bottom:10px;
+button{
+padding:8px 16px;
+margin:5px;
+}
+
+#graph{
+margin-top:20px;
+border:1px solid #ccc;
 }
 
 #progressBar{
-width:420px;
 height:10px;
 background:#ddd;
-margin-bottom:20px;
+margin-top:15px;
 }
 
 #progress{
@@ -50,109 +49,29 @@ background:#4caf50;
 width:0%;
 }
 
-#nav button{
-margin:2px;
-width:35px;
-height:35px;
-}
-
-.answered{
-background:#4caf50;
-color:white;
-}
-
-canvas{
-margin-top:20px;
-margin-bottom:20px;
-}
-
-button{
-margin-top:10px;
-padding:8px 14px;
-cursor:pointer;
-}
-
-#leaderboard{
-background:white;
-padding:10px;
-border-radius:6px;
-width:200px;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<h2 id="title">CSCA Exam</h2>
+<h2 id="title">Math Exam</h2>
 
-<div id="timer"></div>
-<div id="qTimer"></div>
+<div id="questionBox"></div>
+
+<div id="options"></div>
+
+<canvas id="graph" width="420" height="300"></canvas>
+
+<br>
+
+<button onclick="prev()">Prev</button>
+<button onclick="next()">Next</button>
+<button onclick="submitExam()">Submit</button>
 
 <div id="progressBar">
 <div id="progress"></div>
 </div>
 
-<div id="questionBox"></div>
-
-<canvas id="graph" width="420" height="300"></canvas>
-
-<div id="options"></div>
-
-<br>
-
-<div id="nav"></div>
-
-<br>
-
-<button onclick="prev()">Previous</button>
-<button onclick="next()">Next</button>
-<button onclick="submitExam()">Submit</button>
-
-<br><br>
-
-<h3>Leaderboard</h3>
-
-<div id="leaderboard">Loading...</div>
-
-<br>
-
-<button onclick="shareScore()">Share Score</button>
-
-<!-- EXAM ENGINE -->
-<script src="js/exam.js"></script>
-
-<script>
-
-async function loadLeaderboard(){
-
-let { data } = await supabase
-.from("scores")
-.select("*")
-.order("score",{ascending:false})
-.limit(5)
-
-let html=""
-
-if(data){
-
-data.forEach((s,i)=>{
-
-html += (i+1)+". "+s.user_email+" — "+s.score+"%<br>"
-
-})
-
-}
-
-document.getElementById("leaderboard").innerHTML=html
-
-}
-
-loadLeaderboard()
-
-</script>
-
 </body>
-
 </html>
