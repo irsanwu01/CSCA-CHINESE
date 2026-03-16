@@ -241,6 +241,7 @@ alert("Score: "+score+" / "+questions.length)
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
+let ctx = canvas.getContext("2d")
 
 if(!canvas) return
 
@@ -267,7 +268,7 @@ let y1=parseFloat(coords[0][2])
 let x2=parseFloat(coords[1][1])
 let y2=parseFloat(coords[1][2])
 
-chart=new Chart(canvas,{
+chart=new Chart(ctx,{
 type:'scatter',
 
 data:{
