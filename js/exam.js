@@ -47,17 +47,7 @@ window.currentSet = parseInt(params.get("set")) || 1
 ============================= */
 
 async function checkAccess(){
-
-let { data:{ user } } = await window.db.auth.getUser()
-
-if(!user){
-
-alert("Please login first")
-
-location.href="login.html"
-
-return false
-
+return true
 }
 
 
