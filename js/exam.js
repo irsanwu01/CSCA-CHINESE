@@ -115,7 +115,7 @@ return
 
 /* HYPERBOLA */
 
-let hyper=text.match(/x.?2\/(\d+)\s*-\s*y.?2\/(\d+)/i)
+let hyper=text.match(/x.?2\/(\d+)\s*-\s*y.?2\/(\d+)/i)let hyper=text.match(/x[\^²2]?\/(\d+)\s*-\s*y[\^²2]?\/(\d+)/i)
 
 if(!hyper) return
 
