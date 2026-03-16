@@ -3,9 +3,18 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Math Exam</title>
+<title>CSCA Chinese Exam</title>
 
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Chart.js untuk grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Config Supabase -->
+<script src="js/config.js"></script>
+
+<!-- Exam script -->
 <script src="js/exam.js" defer></script>
 
 <style>
@@ -19,7 +28,7 @@ padding:20px;
 
 #questionBox{
 font-size:20px;
-margin-bottom:15px;
+margin-bottom:20px;
 }
 
 #options label{
@@ -49,13 +58,25 @@ background:#4caf50;
 width:0%;
 }
 
+table{
+border-collapse:collapse;
+width:100%;
+margin-top:20px;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:6px;
+text-align:center;
+}
+
 </style>
 
 </head>
 
 <body>
 
-<h2 id="title">Math Exam</h2>
+<h2 id="title">CSCA Chinese Mathematics Exam</h2>
 
 <div id="questionBox"></div>
 
@@ -72,6 +93,56 @@ width:0%;
 <div id="progressBar">
 <div id="progress"></div>
 </div>
+
+<h3>Leaderboard</h3>
+
+<table id="leaderboard">
+<thead>
+<tr>
+<th>Name</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+
+async function loadLeaderboard(){
+
+const {data,error} = await db
+.from("scores")
+.select("*")
+.order("score",{ascending:false})
+.limit(10)
+
+if(error){
+console.log(error)
+return
+}
+
+const tbody = document.querySelector("#leaderboard tbody")
+
+tbody.innerHTML=""
+
+data.forEach(row=>{
+
+let tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>${row.name}</td>
+<td>${row.score}</td>
+`
+
+tbody.appendChild(tr)
+
+})
+
+}
+
+loadLeaderboard()
+
+</script>
 
 </body>
 </html>
