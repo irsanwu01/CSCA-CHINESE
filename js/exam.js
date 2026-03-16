@@ -185,85 +185,26 @@ let canvas=document.getElementById("graph")
 if(!canvas) return
 
 
+
 // =================
-// TWO POINTS
+// DETECT TRIANGLE
 // =================
 
-let p=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
+let tri=text.match(/A\(([-\d]+),([-\d]+)\).*B\(([-\d]+),([-\d]+)\).*C\(([-\d]+),([-\d]+)\)/)
 
-if(p){
+if(tri){
 
-let x1=parseFloat(p[1])
-let y1=parseFloat(p[2])
-let x2=parseFloat(p[3])
-let y2=parseFloat(p[4])
-
-let minX=Math.min(x1,x2)-1
-let maxX=Math.max(x1,x2)+1
-let minY=Math.min(y1,y2)-1
-let maxY=Math.max(y1,y2)+1
+let A={x:+tri[1],y:+tri[2]}
+let B={x:+tri[3],y:+tri[4]}
+let C={x:+tri[5],y:+tri[6]}
 
 chart=new Chart(canvas,{
-
 type:'scatter',
-
 data:{
 datasets:[{
-data:[
-{x:x1,y:y1},
-{x:x2,y:y2}
-],
+data:[A,B,C,A],
 showLine:true,
 pointRadius:6
-}]
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:minX,max:maxX},
-y:{min:minY,max:maxY}
-}
-}
-
-})
-
-return
-
-}
-
-
-// =================
-// LINE y = ax + b
-// =================
-
-let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
-
-if(line){
-
-let a=parseFloat(line[1]||1)
-let b=parseFloat(line[2]||0)
-
-let pts=[]
-
-for(let x=-10;x<=10;x++){
-
-pts.push({
-x:x,
-y:a*x+b
-})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
 }]
 },
 options:{
@@ -282,26 +223,137 @@ return
 }
 
 
+
+// =================
+// DETECT VECTOR
+// =================
+
+let vec=text.match(/向量\s*\(([-\d]+),([-\d]+)\)/)
+
+if(vec){
+
+let x=+vec[1]
+let y=+vec[2]
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:[
+{x:0,y:0},
+{x:x,y:y}
+],
+showLine:true,
+pointRadius:6
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-10,max:10},
+y:{min:-10,max:10}
+}
+}
+})
+
+return
+
+}
+
+
+
+// =================
+// TWO POINTS
+// =================
+
+let pq=text.match(/P\(([-\d]+),([-\d]+)\).*Q\(([-\d]+),([-\d]+)\)/)
+
+if(pq){
+
+let P={x:+pq[1],y:+pq[2]}
+let Q={x:+pq[3],y:+pq[4]}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:[P,Q],
+showLine:true,
+pointRadius:6
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-10,max:10},
+y:{min:-10,max:10}
+}
+}
+})
+
+return
+
+}
+
+
+
+// =================
+// LINE y = ax + b
+// =================
+
+let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
+
+if(line){
+
+let a=parseFloat(line[1]||1)
+let b=parseFloat(line[2]||0)
+
+let pts=[]
+
+for(let x=-10;x<=10;x++){
+
+pts.push({x:x,y:a*x+b})
+
+}
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:pts,
+showLine:true,
+pointRadius:0
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+})
+
+return
+
+}
+
+
+
 // =================
 // PARABOLA
 // =================
 
-let para=text.match(/y\s*=\s*(-?\d*)x²\s*([+-]\s*\d+)?x?\s*([+-]\s*\d+)?/)
+let para=text.match(/y\s*=\s*(-?\d*)x²/)
 
 if(para){
-
-let a=parseFloat(para[1]||1)
-let b=parseFloat(para[2]||0)
-let c=parseFloat(para[3]||0)
 
 let pts=[]
 
 for(let x=-10;x<=10;x+=0.2){
 
-pts.push({
-x:x,
-y:a*x*x+b*x+c
-})
+pts.push({x:x,y:x*x})
 
 }
 
@@ -316,8 +368,7 @@ pointRadius:0
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}}
+maintainAspectRatio:false
 }
 })
 
@@ -325,49 +376,6 @@ return
 
 }
 
-
-// =================
-// CIRCLE
-// =================
-
-let circle=text.match(/x²\s*\+\s*y²\s*=\s*(\d+)/)
-
-if(circle){
-
-let r=Math.sqrt(parseFloat(circle[1]))
-
-let pts=[]
-
-for(let t=0;t<360;t+=5){
-
-let rad=t*Math.PI/180
-
-pts.push({
-x:r*Math.cos(rad),
-y:r*Math.sin(rad)
-})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}}
-}
-})
-
-return
-
-}
 
 
 canvas.style.display="none"
