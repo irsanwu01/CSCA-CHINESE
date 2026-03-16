@@ -10,11 +10,8 @@ let set = params.get("set") || 1
 fetch("questions/set"+set+".json")
 .then(r=>r.json())
 .then(data=>{
-
-questions = data
-
+questions = data.slice(0,48)
 load()
-
 })
 
 function load(){
