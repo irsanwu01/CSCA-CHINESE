@@ -5,87 +5,74 @@ let answers = []
 let params = new URLSearchParams(location.search)
 let set = params.get("set") || 1
 
-// load question set
 fetch("questions/set"+set+".json")
 .then(r => r.json())
 .then(data => {
-    questions = data
-    load()
+
+questions = data
+load()
+
 })
 
 function load(){
 
-    if(questions.length === 0) return
+if(!questions.length) return
 
-    let q = questions[current]
+let q = questions[current]
 
-    document.getElementById("title").innerText =
-    "Question " + (current + 1)
+document.getElementById("title").innerText =
+"Question " + (current+1)
 
-    // soal + gambar
-    let questionHTML = q.hanzi
+let html = q.hanzi
 
-    if(q.image){
-        questionHTML +=
-        "<br><img src='"+q.image+"' style='max-width:100%;height:auto;margin-top:10px'>"
-    }
+if(q.image){
+html += "<br><img src='"+q.image+"' style='max-width:400px'>"
+}
 
-    document.getElementById("questionBox").innerHTML = questionHTML
+document.getElementById("questionBox").innerHTML = html
 
-    // pilihan jawaban
-    let optionsHTML = ""
+let opt=""
 
-    q.options.forEach((o,i)=>{
+q.options.forEach((o,i)=>{
 
-        let selected = ""
+opt += `<button onclick="select(${i})">${o}</button><br>`
 
-        if(answers[current] === i){
-            selected = "style='background:#ffe082'"
-        }
+})
 
-        optionsHTML +=
-        `<button ${selected} onclick="select(${i})">${o}</button><br>`
-
-    })
-
-    document.getElementById("options").innerHTML = optionsHTML
+document.getElementById("options").innerHTML = opt
 
 }
 
 function select(i){
-    answers[current] = i
-    load()
+answers[current] = i
 }
 
 function next(){
-    if(current < questions.length - 1){
-        current++
-        load()
-    }
+
+if(current < questions.length-1){
+current++
+load()
+}
+
 }
 
 function prev(){
-    if(current > 0){
-        current--
-        load()
-    }
+
+if(current > 0){
+current--
+load()
+}
+
 }
 
 function submitExam(){
 
-    let correct = 0
+let correct = 0
 
-    questions.forEach((q,i)=>{
-        if(answers[i] === q.answer){
-            correct++
-        }
-    })
+questions.forEach((q,i)=>{
+if(answers[i]==q.answer) correct++
+})
 
-    let score = Math.round((correct / questions.length) * 100)
+alert("Score: "+correct+" / "+questions.length)
 
-    alert(
-        "Correct: " + correct +
-        "\nTotal: " + questions.length +
-        "\nScore: " + score
-    )
 }
