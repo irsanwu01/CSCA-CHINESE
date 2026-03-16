@@ -1,35 +1,7 @@
-/* =============================
-   INIT SUPABASE (SAFE)
-============================= */
-
-if (!window.db) {
-
-const SUPABASE_URL = "https://rgswtegsanbwtajqhmgy.supabase.co"
-
-const SUPABASE_KEY = "PASTE_KEY_KAMU"
-
-const { createClient } = window.supabase
-
-window.db = createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-)
-
-console.log("Supabase client ready")
-
-}
-
-
-
-/* =============================
-   VARIABLES
-============================= */
-
 let questions=[]
 let current=0
 let answers={}
 let chart=null
-
 
 
 /* =============================
@@ -37,9 +9,7 @@ let chart=null
 ============================= */
 
 const params = new URLSearchParams(window.location.search)
-
 window.currentSet = parseInt(params.get("set")) || 1
-
 
 
 /* =============================
@@ -47,9 +17,21 @@ window.currentSet = parseInt(params.get("set")) || 1
 ============================= */
 
 async function checkAccess(){
+
+// set1 selalu gratis
+if(window.currentSet==1){
 return true
 }
 
+try{
+
+let { data:{ user } } = await window.db.auth.getUser()
+
+if(!user){
+alert("Please login first")
+location.href="login.html"
+return false
+}
 
 let { data } = await window.db
 .from("users")
@@ -57,31 +39,24 @@ let { data } = await window.db
 .eq("email", user.email)
 .single()
 
-
-
-/* FREE SET */
-
-if(window.currentSet==1){
-return true
-}
-
-
-/* PREMIUM SET */
-
-if(window.currentSet>1 && !data?.premium){
+if(!data?.premium){
 
 alert("This set is Premium")
-
 location.href="store.html"
-
 return false
 
 }
 
 return true
 
+}catch(e){
+
+console.log("Access check skipped")
+return true
+
 }
 
+}
 
 
 /* =============================
@@ -94,7 +69,6 @@ let allowed = await checkAccess()
 
 if(!allowed) return
 
-
 let res = await fetch("./questions/set"+window.currentSet+".json")
 
 questions = await res.json()
@@ -102,7 +76,6 @@ questions = await res.json()
 showQuestion()
 
 }
-
 
 
 /* =============================
@@ -120,13 +93,10 @@ document.getElementById("questionBox").innerHTML =
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
-
 drawGraph(q.hanzi)
-
 updateProgress()
 
 }
-
 
 
 /* =============================
@@ -159,7 +129,6 @@ document.getElementById("options").innerHTML=html
 }
 
 
-
 /* =============================
    NAVIGATION
 ============================= */
@@ -183,7 +152,6 @@ showQuestion()
 }
 
 
-
 /* =============================
    PROGRESS
 ============================= */
@@ -191,11 +159,9 @@ showQuestion()
 function updateProgress(){
 
 let p=(current+1)/questions.length*100
-
 document.getElementById("progress").style.width=p+"%"
 
 }
-
 
 
 /* =============================
@@ -215,7 +181,6 @@ alert("Score: "+score+" / "+questions.length)
 }
 
 
-
 /* =============================
    GRAPH ENGINE
 ============================= */
@@ -223,7 +188,6 @@ alert("Score: "+score+" / "+questions.length)
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
-
 if(!canvas) return
 
 let ctx = canvas.getContext("2d")
@@ -265,23 +229,18 @@ borderColor:"blue",
 pointRadius:6
 }]
 },
-
 options:{
 plugins:{legend:{display:false}},
-responsive:true,
-maintainAspectRatio:false,
 scales:{
 x:{min:-5,max:5},
 y:{min:-5,max:5}
 }
 }
-
 })
 
 }
 
 }
-
 
 
 /* =============================
