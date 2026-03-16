@@ -5,37 +5,10 @@ let chart=null
 
 
 /* =============================
-   WAIT DB READY
-============================= */
-
-function waitForDB(){
-
-return new Promise(resolve=>{
-
-const check=()=>{
-
-if(window.db){
-resolve()
-}else{
-setTimeout(check,50)
-}
-
-}
-
-check()
-
-})
-
-}
-
-
-
-/* =============================
    GET SET FROM URL
 ============================= */
 
 const params = new URLSearchParams(window.location.search)
-
 window.currentSet = parseInt(params.get("set")) || 1
 
 
@@ -51,16 +24,12 @@ let { data:{ user } } = await window.db.auth.getUser()
 if(!user){
 
 alert("Please login first")
-
 location.href="login.html"
-
 return false
 
 }
 
-
 let { data } = await window.db
-.from("users")
 .from("users")
 .select("premium")
 .eq("email", user.email)
@@ -79,9 +48,7 @@ return true
 if(window.currentSet>1 && !data?.premium){
 
 alert("This set is Premium")
-
 location.href="store.html"
-
 return false
 
 }
@@ -98,20 +65,9 @@ return true
 
 async function loadSet(){
 
-console.log("loadSet running")
-
 let allowed = await checkAccess()
-
-console.log("allowed:", allowed)
-
-console.log("loadSet started")
-
-let allowed = await checkAccess()
-
-console.log("allowed:", allowed)
 
 if(!allowed) return
-
 
 let res = await fetch("./questions/set"+window.currentSet+".json")
 
@@ -131,16 +87,14 @@ function showQuestion(){
 
 let q=questions[current]
 
-document.getElementById("title").innerText=
+document.getElementById("title").innerText =
 "Set "+window.currentSet+" | Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML=
+document.getElementById("questionBox").innerHTML =
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
-
 drawGraph(q.hanzi)
-
 updateProgress()
 
 }
@@ -157,7 +111,7 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
-let checked=answers[current]==i?"checked":""
+let checked = answers[current]==i ? "checked" : ""
 
 html+=`
 <label>
@@ -209,7 +163,6 @@ showQuestion()
 function updateProgress(){
 
 let p=(current+1)/questions.length*100
-
 document.getElementById("progress").style.width=p+"%"
 
 }
@@ -241,9 +194,10 @@ alert("Score: "+score+" / "+questions.length)
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
-let ctx = canvas.getContext("2d")
 
 if(!canvas) return
+
+let ctx = canvas.getContext("2d")
 
 canvas.width = canvas.parentElement.clientWidth
 canvas.height = 200
@@ -305,10 +259,6 @@ y:{min:-5,max:5}
    START
 ============================= */
 
-window.addEventListener("load", () => {
-
-console.log("Exam start")
-
+window.addEventListener("load", ()=>{
 loadSet()
-
 })
