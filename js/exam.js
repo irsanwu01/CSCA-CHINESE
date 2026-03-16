@@ -133,6 +133,31 @@ alert("Score: "+score+" / "+questions.length)
 
 
 
-window.addEventListener("load", ()=>{
+function waitForDB(){
+
+return new Promise(resolve=>{
+
+const check=()=>{
+
+if(window.db){
+resolve()
+}else{
+setTimeout(check,50)
+}
+
+}
+
+check()
+
+})
+
+}
+
+
+window.addEventListener("load", async ()=>{
+
+await waitForDB()
+
 loadSet()
+
 })
