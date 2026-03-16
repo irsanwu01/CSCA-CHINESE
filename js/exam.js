@@ -61,7 +61,9 @@ document.getElementById("questionBox").innerHTML=
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
+
 drawGraph(q.hanzi)
+
 updateProgress()
 
 }
@@ -132,40 +134,6 @@ alert("Score: "+score+" / "+questions.length)
 
 
 
-/* =============================
-   LABEL PLUGIN
-============================= */
-
-const labelPlugin={
-id:"labelPlugin",
-afterDatasetsDraw(chart){
-
-const {ctx}=chart
-
-chart.data.datasets.forEach((dataset,i)=>{
-
-if(!dataset.labels) return
-
-let meta=chart.getDatasetMeta(i)
-
-meta.data.forEach((point,index)=>{
-
-let label=dataset.labels[index]
-
-ctx.fillStyle="black"
-ctx.font="12px Arial"
-
-ctx.fillText(label,point.x+6,point.y-6)
-
-})
-
-})
-
-}
-}
-
-
-
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
@@ -204,24 +172,8 @@ leftBottom.push({x:-x,y:-y})
 }
 
 
-
-/* asymptote */
-
-let asym1=[]
-let asym2=[]
-
-for(let x=-6;x<=6;x+=0.1){
-
-asym1.push({x:x,y:(b/a)*x})
-asym2.push({x:x,y:-(b/a)*x})
-
-}
-
-
 chart=new Chart(canvas,{
 type:'scatter',
-
-plugins:[labelPlugin],
 
 data:{
 datasets:[
@@ -255,32 +207,10 @@ pointRadius:0
 },
 
 {
-data:asym1,
-showLine:true,
-borderColor:"#3498db",
-borderDash:[5,5],
-pointRadius:0
-},
-
-{
-data:asym2,
-showLine:true,
-borderColor:"#3498db",
-borderDash:[5,5],
-pointRadius:0
-},
-
-{
 data:[
 {x:c,y:0},
 {x:-c,y:0}
 ],
-
-labels:[
-"("+c+",0)",
-"("+(-c)+",0)"
-],
-
 backgroundColor:"blue",
 pointRadius:6
 }
@@ -289,9 +219,7 @@ pointRadius:6
 },
 
 options:{
-plugins:{
-legend:{display:false}
-},
+plugins:{legend:{display:false}},
 
 responsive:true,
 maintainAspectRatio:false,
@@ -300,10 +228,33 @@ scales:{
 x:{min:-6,max:6,ticks:{stepSize:1}},
 y:{min:-6,max:6,ticks:{stepSize:1}}
 }
-
 }
 
 })
+
+
+
+/* LABEL FOKUS */
+
+setTimeout(function(){
+
+let ctx=chart.ctx
+let xScale=chart.scales.x
+let yScale=chart.scales.y
+
+ctx.fillStyle="black"
+ctx.font="12px Arial"
+
+let px=xScale.getPixelForValue(c)
+let py=yScale.getPixelForValue(0)
+
+ctx.fillText("("+c+",0)",px+5,py-5)
+
+let px2=xScale.getPixelForValue(-c)
+
+ctx.fillText("("+(-c)+",0)",px2-40,py-5)
+
+},200)
 
 }
 
