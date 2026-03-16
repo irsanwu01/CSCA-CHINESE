@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+
 <meta charset="UTF-8">
 <title>CSCA Exam</title>
 
@@ -9,18 +9,30 @@
 
 body{
 font-family:Arial;
-padding:40px;
+margin:40px;
 }
 
-#questionBox{
-font-size:22px;
+#timer{
+font-size:24px;
+color:red;
+margin-bottom:10px;
+}
+
+#qTimer{
+font-size:14px;
+color:#666;
 margin-bottom:20px;
 }
 
-button{
-padding:10px 16px;
-margin:5px;
-cursor:pointer;
+#nav button{
+margin:2px;
+width:35px;
+height:35px;
+}
+
+.answered{
+background:#8bc34a;
+color:white;
 }
 
 </style>
@@ -31,9 +43,15 @@ cursor:pointer;
 
 <h2 id="title"></h2>
 
-<div id="questionBox"></div>
+<div id="timer"></div>
+<div id="qTimer"></div>
 
+<div id="questionBox"></div>
 <div id="options"></div>
+
+<br>
+
+<div id="nav"></div>
 
 <br>
 
