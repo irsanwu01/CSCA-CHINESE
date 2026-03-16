@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>Choose Packages</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+max-width:700px;
+margin:auto;
+padding:20px;
+}
+
+.package{
+margin:5px 0;
+}
+
+#bonus{
+margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Select Exam Packages</h2>
+
+<p>Price: Rp20.000 per set</p>
+
+<div id="sets">
+
+<label class="package"><input type="checkbox" value="2"> Set 2</label>
+<label class="package"><input type="checkbox" value="3"> Set 3</label>
+<label class="package"><input type="checkbox" value="4"> Set 4</label>
+<label class="package"><input type="checkbox" value="5"> Set 5</label>
+<label class="package"><input type="checkbox" value="6"> Set 6</label>
+<label class="package"><input type="checkbox" value="7"> Set 7</label>
+<label class="package"><input type="checkbox" value="8"> Set 8</label>
+<label class="package"><input type="checkbox" value="9"> Set 9</label>
+<label class="package"><input type="checkbox" value="10"> Set 10</label>
+
+</div>
+
+<h3>Total: Rp <span id="total">0</span></h3>
+
+<div id="bonus"></div>
+
+<br>
+
+<button onclick="buy()">Continue Payment</button>
+
+<script>
+
+let selectedSets=[]
+let freeSets=0
+
+document.querySelectorAll("#sets input").forEach(cb=>{
+
+cb.addEventListener("change",update)
+
+})
+
+function update(){
+
+selectedSets=[]
+
+document.querySelectorAll("#sets input:checked").forEach(cb=>{
+selectedSets.push(parseInt(cb.value))
+})
+
+let price=selectedSets.length*20000
+
+document.getElementById("total").innerText=price
+
+freeSets=Math.floor(selectedSets.length/3)
+
+showBonus()
+
+}
+
+function showBonus(){
+
+let div=document.getElementById("bonus")
+
+if(freeSets==0){
+
+div.innerHTML=""
+return
+
+}
+
+let html="<h3>You get "+freeSets+" FREE set</h3>"
+
+for(let i=2;i<=10;i++){
+
+if(!selectedSets.includes(i)){
+
+html+=`
+<label>
+<input type="radio" name="bonus" value="${i}">
+Set ${i}
+</label><br>
+`
+
+}
+
+}
+
+div.innerHTML=html
+
+}
+
+async function buy(){
+
+if(selectedSets.length==0){
+
+alert("Select at least one set")
+
+return
+
+}
+
+let bonus=document.querySelector('input[name="bonus"]:checked')
+
+let bonusSet=bonus?parseInt(bonus.value):null
+
+let {data:{user}}=await db.auth.getUser()
+
+await db.from("payments").insert({
+
+user_id:user.id,
+sets:selectedSets,
+bonus_set:bonusSet,
+amount:selectedSets.length*20000,
+status:"pending"
+
+})
+
+alert("Proceed to payment")
+
+location.href="payment.html"
+
+}
+
+</script>
+
+</body>
+</html>
