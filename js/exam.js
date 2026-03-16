@@ -98,6 +98,12 @@ return true
 
 async function loadSet(){
 
+console.log("loadSet running")
+
+let allowed = await checkAccess()
+
+console.log("allowed:", allowed)
+
 console.log("loadSet started")
 
 let allowed = await checkAccess()
@@ -298,6 +304,10 @@ y:{min:-5,max:5}
    START
 ============================= */
 
-waitForDB().then(()=>{
+window.addEventListener("load", () => {
+
+console.log("Exam start")
+
 loadSet()
+
 })
