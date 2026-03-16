@@ -185,200 +185,67 @@ let canvas=document.getElementById("graph")
 if(!canvas) return
 
 
+// =======================
+// DETECT POINT P AND Q
+// =======================
 
-// =================
-// DETECT TRIANGLE
-// =================
+let match=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
-let tri=text.match(/A\(([-\d]+),([-\d]+)\).*B\(([-\d]+),([-\d]+)\).*C\(([-\d]+),([-\d]+)\)/)
+if(!match){
 
-if(tri){
-
-let A={x:+tri[1],y:+tri[2]}
-let B={x:+tri[3],y:+tri[4]}
-let C={x:+tri[5],y:+tri[6]}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:[A,B,C,A],
-showLine:true,
-pointRadius:6
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
-}
-}
-})
+canvas.style.display="none"
 
 return
 
 }
 
+canvas.style.display="block"
+
+let x1=parseFloat(match[1])
+let y1=parseFloat(match[2])
+let x2=parseFloat(match[3])
+let y2=parseFloat(match[4])
 
 
-// =================
-// DETECT VECTOR
-// =================
+// AUTO SCALE
 
-let vec=text.match(/向量\s*\(([-\d]+),([-\d]+)\)/)
+let minX=Math.min(x1,x2)-1
+let maxX=Math.max(x1,x2)+1
+let minY=Math.min(y1,y2)-1
+let maxY=Math.max(y1,y2)+1
 
-if(vec){
-
-let x=+vec[1]
-let y=+vec[2]
 
 chart=new Chart(canvas,{
+
 type:'scatter',
+
 data:{
-datasets:[{
+datasets:[
+{
+label:"Line",
 data:[
-{x:0,y:0},
-{x:x,y:y}
+{x:x1,y:y1},
+{x:x2,y:y2}
 ],
 showLine:true,
 pointRadius:6
-}]
+}
+]
 },
+
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{legend:{display:false}},
+plugins:{
+legend:{display:false}
+},
 scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
+x:{min:minX,max:maxX},
+y:{min:minY,max:maxY}
 }
 }
+
 })
-
-return
-
-}
-
-
-
-// =================
-// TWO POINTS
-// =================
-
-let pq=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
-
-if(pq){
-
-let P={x:+pq[1],y:+pq[2]}
-let Q={x:+pq[3],y:+pq[4]}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:[P,Q],
-showLine:true,
-pointRadius:6
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
-}
-}
-})
-
-return
-
-}
-
-
-
-// =================
-// LINE y = ax + b
-// =================
-
-let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
-
-if(line){
-
-let a=parseFloat(line[1]||1)
-let b=parseFloat(line[2]||0)
-
-let pts=[]
-
-for(let x=-10;x<=10;x++){
-
-pts.push({x:x,y:a*x+b})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false
-}
-})
-
-return
-
-}
-
-
-
-// =================
-// PARABOLA
-// =================
-
-let para=text.match(/y\s*=\s*(-?\d*)x²/)
-
-if(para){
-
-let pts=[]
-
-for(let x=-10;x<=10;x+=0.2){
-
-pts.push({x:x,y:x*x})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false
-}
-})
-
-return
-
-}
-
-
-
-canvas.style.display="none"
 
 }
 
