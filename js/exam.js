@@ -18,6 +18,7 @@ showQuestion()
 }
 
 
+
 function startTimer(){
 
 let select=document.getElementById("examTime")
@@ -47,6 +48,7 @@ submitExam()
 }
 
 
+
 function showQuestion(){
 
 let q=questions[current]
@@ -58,12 +60,11 @@ document.getElementById("questionBox").innerHTML=
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
-
 drawGraph(q.hanzi)
-
 updateProgress()
 
 }
+
 
 
 function renderOptions(q){
@@ -90,6 +91,7 @@ document.getElementById("options").innerHTML=html
 }
 
 
+
 function next(){
 if(current<questions.length-1){
 current++
@@ -105,12 +107,14 @@ showQuestion()
 }
 
 
+
 function updateProgress(){
 
 let p=(current+1)/questions.length*100
 document.getElementById("progress").style.width=p+"%"
 
 }
+
 
 
 function submitExam(){
@@ -124,6 +128,7 @@ if(answers[i]==q.answer) score++
 alert("Score: "+score+" / "+questions.length)
 
 }
+
 
 
 function drawGraph(text){
@@ -140,9 +145,9 @@ text=text.replace(/\*/g,"")
 
 
 
-/* =====================
-   DETECT TWO POINTS
-===================== */
+/* ======================
+   TWO POINTS
+====================== */
 
 let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
 
@@ -179,22 +184,22 @@ return
 
 
 
-/* =====================
-   DETECT HYPERBOLA
-===================== */
+/* ======================
+   HYPERBOLA
+====================== */
 
 let hyper=text.match(/x[\^²2]\/(\d+)\s*-\s*y[\^²2]\/(\d+)/i)
 
 if(!hyper){
-
 hyper=text.match(/x.?2\/(\d+)\s*-\s*y.?2\/(\d+)/i)
-
 }
 
 if(hyper){
 
 let a=Math.sqrt(parseFloat(hyper[1]))
 let b=Math.sqrt(parseFloat(hyper[2]))
+
+let c=Math.sqrt(a*a+b*b)
 
 let rightTop=[]
 let rightBottom=[]
@@ -213,7 +218,17 @@ leftBottom.push({x:-x,y:-y})
 
 }
 
-let c=Math.sqrt(a*a+b*b)
+/* asymptote */
+
+let asym1=[]
+let asym2=[]
+
+for(let x=-6;x<=6;x+=0.1){
+
+asym1.push({x:x,y:(b/a)*x})
+asym2.push({x:x,y:-(b/a)*x})
+
+}
 
 chart=new Chart(canvas,{
 type:'scatter',
@@ -249,6 +264,22 @@ pointRadius:0
 },
 
 {
+data:asym1,
+showLine:true,
+borderColor:"#3498db",
+borderDash:[5,5],
+pointRadius:0
+},
+
+{
+data:asym2,
+showLine:true,
+borderColor:"#3498db",
+borderDash:[5,5],
+pointRadius:0
+},
+
+{
 data:[
 {x:c,y:0},
 {x:-c,y:0}
@@ -275,6 +306,7 @@ y:{min:-6,max:6}
 }
 
 }
+
 
 
 loadSet()
