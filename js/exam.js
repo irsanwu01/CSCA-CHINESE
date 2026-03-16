@@ -1,22 +1,16 @@
-let questions = []
-let current = 0
-let answers = {}
-let chart = null
+let questions=[]
+let current=0
+let answers={}
+let chart=null
 
-// TIMER
-let examMinutes = 60
-let remainingSeconds = examMinutes * 60
-let timerInterval = null
+let timer=null
+let seconds=0
 
 async function loadSet(n){
 
-let file = "./questions/set"+n+".json"
+let res=await fetch("./questions/set"+n+".json")
 
-let res = await fetch(file)
-
-questions = await res.json()
-
-current = 0
+questions=await res.json()
 
 startTimer()
 
@@ -26,53 +20,43 @@ showQuestion()
 
 function startTimer(){
 
-let select = document.getElementById("examTime")
+let m=parseInt(document.getElementById("examTime").value)
 
-if(select){
-examMinutes = parseInt(select.value)
-}
+seconds=m*60
 
-remainingSeconds = examMinutes * 60
+if(timer) clearInterval(timer)
 
-if(timerInterval) clearInterval(timerInterval)
+timer=setInterval(function(){
 
-timerInterval = setInterval(updateTimer,1000)
+seconds--
 
-}
+let min=Math.floor(seconds/60)
+let sec=seconds%60
 
-function updateTimer(){
+if(sec<10) sec="0"+sec
 
-remainingSeconds--
+document.getElementById("timer").innerText="Time: "+min+":"+sec
 
-let m = Math.floor(remainingSeconds/60)
-let s = remainingSeconds % 60
+if(seconds<=0){
 
-if(s<10) s="0"+s
-
-let el=document.getElementById("timer")
-
-if(el){
-el.innerText="Time: "+m+":"+s
-}
-
-if(remainingSeconds<=0){
-
-clearInterval(timerInterval)
+clearInterval(timer)
 
 submitExam()
 
 }
 
+},1000)
+
 }
 
 function showQuestion(){
 
-let q = questions[current]
+let q=questions[current]
 
-document.getElementById("title").innerText =
+document.getElementById("title").innerText=
 "Question "+(current+1)+" / "+questions.length
 
-document.getElementById("questionBox").innerHTML =
+document.getElementById("questionBox").innerHTML=
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
@@ -89,7 +73,7 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
-let checked = answers[current]==i ? "checked" : ""
+let checked=answers[current]==i?"checked":""
 
 html+=`
 <label>
@@ -97,7 +81,7 @@ html+=`
 value="${i}" ${checked}
 onchange="saveAnswer(${i})">
 ${o}
-</label><br>
+</label>
 `
 
 })
@@ -114,7 +98,7 @@ answers[current]=v
 
 function next(){
 
-if(current < questions.length-1){
+if(current<questions.length-1){
 
 current++
 
@@ -126,7 +110,7 @@ showQuestion()
 
 function prev(){
 
-if(current > 0){
+if(current>0){
 
 current--
 
@@ -160,10 +144,6 @@ alert("Score: "+percent+"%")
 
 }
 
-// ========================
-// GRAPH DIAGRAM SYSTEM
-// ========================
-
 function clearGraph(){
 
 if(chart){
@@ -181,8 +161,6 @@ function renderDiagram(text){
 clearGraph()
 
 let canvas=document.getElementById("graph")
-
-if(!canvas) return
 
 let p=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
