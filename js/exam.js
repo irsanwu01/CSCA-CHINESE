@@ -61,6 +61,7 @@ return false
 
 let { data } = await window.db
 .from("users")
+.from("users")
 .select("premium")
 .eq("email", user.email)
 .single()
