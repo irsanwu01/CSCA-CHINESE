@@ -1,148 +1,174 @@
-<!DOCTYPE html>
-<html>
-<head>
+let questions = []
+let current = 0
+let answers = {}
+let chart = null
 
-<meta charset="UTF-8">
-<title>CSCA Chinese Exam</title>
+async function loadSet(n){
 
-<!-- Supabase library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+let file = "./questions/set"+n+".json"
 
-<!-- Chart.js untuk grafik -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+console.log("loading",file)
 
-<!-- Config Supabase -->
-<script src="js/config.js"></script>
+let res = await fetch(file)
 
-<!-- Exam script -->
-<script src="js/exam.js" defer></script>
+questions = await res.json()
 
-<style>
+current = 0
 
-body{
-font-family:Arial;
-max-width:900px;
-margin:auto;
-padding:20px;
+showQuestion()
+
 }
 
-#questionBox{
-font-size:20px;
-margin-bottom:20px;
+function showQuestion(){
+
+let q = questions[current]
+
+document.getElementById("title").innerText =
+"Question "+(current+1)+" / "+questions.length
+
+document.getElementById("questionBox").innerHTML = q.hanzi
+
+renderOptions(q)
+
+renderDiagram(q.hanzi)
+
+updateProgress()
+
 }
 
-#options label{
-display:block;
-margin:6px 0;
-}
+function renderOptions(q){
 
-button{
-padding:8px 16px;
-margin:5px;
-}
+let html=""
 
-#graph{
-margin-top:20px;
-border:1px solid #ccc;
-}
+q.options.forEach((o,i)=>{
 
-#progressBar{
-height:10px;
-background:#ddd;
-margin-top:15px;
-}
+let checked = answers[current]==i ? "checked" : ""
 
-#progress{
-height:10px;
-background:#4caf50;
-width:0%;
-}
-
-table{
-border-collapse:collapse;
-width:100%;
-margin-top:20px;
-}
-
-td,th{
-border:1px solid #ccc;
-padding:6px;
-text-align:center;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h2 id="title">CSCA Chinese Mathematics Exam</h2>
-
-<div id="questionBox"></div>
-
-<div id="options"></div>
-
-<canvas id="graph" width="420" height="300"></canvas>
-
-<br>
-
-<button onclick="prev()">Prev</button>
-<button onclick="next()">Next</button>
-<button onclick="submitExam()">Submit</button>
-
-<div id="progressBar">
-<div id="progress"></div>
-</div>
-
-<h3>Leaderboard</h3>
-
-<table id="leaderboard">
-<thead>
-<tr>
-<th>Name</th>
-<th>Score</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
-<script>
-
-async function loadLeaderboard(){
-
-const {data,error} = await db
-.from("scores")
-.select("*")
-.order("score",{ascending:false})
-.limit(10)
-
-if(error){
-console.log(error)
-return
-}
-
-const tbody = document.querySelector("#leaderboard tbody")
-
-tbody.innerHTML=""
-
-data.forEach(row=>{
-
-let tr=document.createElement("tr")
-
-tr.innerHTML=`
-<td>${row.name}</td>
-<td>${row.score}</td>
+html += `
+<label>
+<input type="radio" name="opt"
+value="${i}" ${checked}
+onchange="saveAnswer(${i})">
+${o}
+</label>
 `
 
-tbody.appendChild(tr)
+})
+
+document.getElementById("options").innerHTML = html
+
+}
+
+function saveAnswer(v){
+
+answers[current] = v
+
+}
+
+function next(){
+
+if(current < questions.length-1){
+
+current++
+showQuestion()
+
+}
+
+}
+
+function prev(){
+
+if(current > 0){
+
+current--
+showQuestion()
+
+}
+
+}
+
+function updateProgress(){
+
+let p = (current+1)/questions.length*100
+
+document.getElementById("progress").style.width = p+"%"
+
+}
+
+function submitExam(){
+
+let score = 0
+
+questions.forEach((q,i)=>{
+
+if(answers[i]==q.answer){
+
+score++
+
+}
+
+})
+
+let percent = Math.round(score/questions.length*100)
+
+alert("Score: "+percent+"%")
+
+}
+
+function clearGraph(){
+
+if(chart){
+
+chart.destroy()
+chart=null
+
+}
+
+}
+
+function renderDiagram(text){
+
+clearGraph()
+
+const canvas = document.getElementById("graph")
+
+if(!canvas) return
+
+let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
+
+if(p){
+
+let x1 = parseFloat(p[1])
+let y1 = parseFloat(p[2])
+let x2 = parseFloat(p[3])
+let y2 = parseFloat(p[4])
+
+chart = new Chart(canvas,{
+
+type:'scatter',
+
+data:{
+datasets:[{
+data:[
+{x:x1,y:y1},
+{x:x2,y:y2}
+],
+showLine:true
+}]
+},
+
+options:{
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-10,max:10},
+y:{min:-10,max:10}
+}
+}
 
 })
 
 }
 
-loadLeaderboard()
+}
 
-</script>
-
-</body>
-</html>
+loadSet(1)
