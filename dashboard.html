@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · CSCA 数学</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f4fa; min-height: 100vh; }
+        .navbar { background: #132433; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: bold; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .user-email { background: #1e4b6e; padding: 8px 20px; border-radius: 30px; }
+        .btn-logout { background: transparent; border: 2px solid white; color: white; padding: 8px 25px; border-radius: 30px; cursor: pointer; }
+        .btn-logout:hover { background: white; color: #132433; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .welcome-section { background: white; border-radius: 30px; padding: 30px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .welcome-section h1 { color: #132433; margin-bottom: 10px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: white; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-card h3 { color: #5f6b7a; font-size: 1rem; margin-bottom: 10px; }
+        .stat-card .number { font-size: 2.5rem; font-weight: 700; color: #132433; }
+        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin: 30px 0; }
+        .package-card { background: white; border-radius: 25px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; border: 3px solid transparent; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .package-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        .package-card.selected { border-color: #132433; background: #e8f0fe; }
+        .package-card h2 { font-size: 2.5rem; color: #132433; margin-bottom: 10px; }
+        .package-card .price { font-size: 1.3rem; color: #28a745; font-weight: 600; margin: 15px 0; }
+        .package-card .status { display: inline-block; padding: 5px 15px; border-radius: 30px; font-size: 0.9rem; margin-top: 10px; }
+        .status-free { background: #d4edda; color: #155724; }
+        .status-premium { background: #fff3cd; color: #856404; }
+        .btn-start { background: #132433; color: white; border: none; padding: 15px 50px; border-radius: 40px; font-size: 1.3rem; font-weight: 600; cursor: pointer; margin-top: 30px; }
+        .btn-start:disabled { background: #95a5a6; cursor: not-allowed; }
+        .footer { text-align: center; padding: 30px; color: #5f6b7a; }
+        .premium-tag { background: #ffc107; color: #132433; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">CSCA 数学</div>
+        <div class="user-info">
+            <span class="user-email" id="userEmail">zhang@email.com</span>
+            <button class="btn-logout" onclick="logout()">登出 / Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Selamat datang, <span id="userName">Zhang Ming</span>! 👋</h1>
+            <p>Pilih paket soal yang ingin Anda kerjakan. Paket 1 gratis untuk dicoba.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Paket Tersedia</h3>
+                <div class="number">10</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Soal</h3>
+                <div class="number">480</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ujian Selesai</h3>
+                <div class="number">3</div>
+            </div>
+            <div class="stat-card">
+                <h3>Rata-rata Skor</h3>
+                <div class="number">85</div>
+            </div>
+        </div>
+
+        <!-- Package Grid -->
+        <h2 style="color: #132433; margin: 20px 0;">📚 Pilih Paket Soal</h2>
+        <div class="package-grid" id="packageGrid">
+            <!-- Package 1 - Free -->
+            <div class="package-card" onclick="selectPackage(1)" id="package-1">
+                <h2>Paket 1</h2>
+                <p style="color: #5f6b7a;">Aljabar & Fungsi</p>
+                <div class="price">GRATIS</div>
+                <span class="status status-free">Tersedia</span>
+            </div>
+
+            <!-- Package 2 - Premium -->
+            <div class="package-card" onclick="selectPackage(2)" id="package-2">
+                <h2>Paket 2</h2>
+                <p style="color: #5f6b7a;">Aljabar & Fungsi</p>
+                <div class="price">Rp 25.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 3 - Premium -->
+            <div class="package-card" onclick="selectPackage(3)" id="package-3">
+                <h2>Paket 3</h2>
+                <p style="color: #5f6b7a;">Kalkulus</p>
+                <div class="price">Rp 25.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 4 - Premium -->
+            <div class="package-card" onclick="selectPackage(4)" id="package-4">
+                <h2>Paket 4</h2>
+                <p style="color: #5f6b7a;">Kalkulus</p>
+                <div class="price">Rp 25.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 5 - Premium -->
+            <div class="package-card" onclick="selectPackage(5)" id="package-5">
+                <h2>Paket 5</h2>
+                <p style="color: #5f6b7a;">Geometri & Vektor</p>
+                <div class="price">Rp 50.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 6 - Premium -->
+            <div class="package-card" onclick="selectPackage(6)" id="package-6">
+                <h2>Paket 6</h2>
+                <p style="color: #5f6b7a;">Geometri & Vektor</p>
+                <div class="price">Rp 50.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 7 - Premium -->
+            <div class="package-card" onclick="selectPackage(7)" id="package-7">
+                <h2>Paket 7</h2>
+                <p style="color: #5f6b7a;">Probabilitas</p>
+                <div class="price">Rp 50.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 8 - Premium -->
+            <div class="package-card" onclick="selectPackage(8)" id="package-8">
+                <h2>Paket 8</h2>
+                <p style="color: #5f6b7a;">Review Campuran</p>
+                <div class="price">Rp 75.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 9 - Premium -->
+            <div class="package-card" onclick="selectPackage(9)" id="package-9">
+                <h2>Paket 9</h2>
+                <p style="color: #5f6b7a;">Review Campuran</p>
+                <div class="price">Rp 75.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+
+            <!-- Package 10 - Premium -->
+            <div class="package-card" onclick="selectPackage(10)" id="package-10">
+                <h2>Paket 10</h2>
+                <p style="color: #5f6b7a;">Try Out Lengkap</p>
+                <div class="price">Rp 100.000</div>
+                <span class="status status-premium">Premium</span>
+            </div>
+        </div>
+
+        <!-- Bundling Offer -->
+        <div style="background: #e8f0fe; border-radius: 30px; padding: 30px; margin: 30px 0; text-align: center;">
+            <h3 style="color: #132433; font-size: 1.8rem;">🎁 Paket Lengkap 1-10</h3>
+            <p style="font-size: 1.2rem; margin: 15px 0;">Hemat 40%! Dapatkan akses ke SEMUA 480 soal</p>
+            <div style="font-size: 2rem; color: #28a745; font-weight: 700; margin: 15px 0;">Rp 150.000</div>
+            <button class="btn-start" onclick="buyAllPackages()" style="width: auto; padding: 15px 60px;">Beli Paket Lengkap</button>
+        </div>
+
+        <!-- Start Button -->
+        <div style="text-align: center;">
+            <button class="btn-start" id="startExamBtn" onclick="startExam()" disabled>Mulai Ujian</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>created by Irsanwu · © 2024 CSCA Exam Platform</p>
+    </div>
+
+    <script>
+        let selectedPackage = null;
+
+        // Load user data from localStorage
+        window.onload = function() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user) {
+                document.getElementById('userName').innerText = user.name;
+                document.getElementById('userEmail').innerText = user.email;
+            }
+        };
+
+        function selectPackage(pkg) {
+            selectedPackage = pkg;
+            // Remove selected class from all
+            document.querySelectorAll('.package-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            // Add selected class to clicked package
+            document.getElementById(`package-${pkg}`).classList.add('selected');
+            
+            // Enable start button
+            document.getElementById('startExamBtn').disabled = false;
+        }
+
+        function startExam() {
+            if (!selectedPackage) {
+                alert('Pilih paket terlebih dahulu!');
+                return;
+            }
+
+            // Check if package is free or paid
+            if (selectedPackage === 1) {
+                // Free package - langsung ke exam
+                window.location.href = `exam.html?package=${selectedPackage}`;
+            } else {
+                // Paid package - cek apakah sudah dibeli
+                const purchased = JSON.parse(localStorage.getItem('purchasedPackages')) || [];
+                if (purchased.includes(selectedPackage)) {
+                    window.location.href = `exam.html?package=${selectedPackage}`;
+                } else {
+                    window.location.href = `payment.html?package=${selectedPackage}`;
+                }
+            }
+        }
+
+        function buyAllPackages() {
+            window.location.href = 'payment.html?package=all';
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

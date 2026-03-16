@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel · CSCA 数学</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #0b2b40, #1a4b6d); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .admin-container { max-width: 1200px; width: 100%; background: white; border-radius: 48px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .header { background: #132433; color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .login-box { max-width: 400px; margin: 50px auto; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .login-box h2 { color: #132433; margin-bottom: 30px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-group input { width: 100%; padding: 15px 20px; border: 2px solid #e0e7ef; border-radius: 30px; font-size: 1rem; }
+        .btn { background: #132433; color: white; border: none; padding: 15px; border-radius: 30px; width: 100%; font-size: 1.2rem; cursor: pointer; }
+        .btn:hover { background: #1e4b6e; }
+        .error { color: #e74c3c; text-align: center; margin: 10px 0; }
+        .dashboard { display: none; padding: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #f0f4fa; border-radius: 20px; padding: 20px; text-align: center; }
+        .stat-card h3 { color: #5f6b7a; font-size: 1rem; margin-bottom: 10px; }
+        .stat-card .number { font-size: 2.5rem; font-weight: 700; color: #132433; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 20px; overflow: hidden; }
+        th { background: #132433; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #e0e7ef; }
+        .status-pending { background: #fff3cd; color: #856404; padding: 5px 15px; border-radius: 20px; }
+        .status-active { background: #d4edda; color: #155724; padding: 5px 15px; border-radius: 20px; }
+        .btn-approve { background: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+        .btn-reject { background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+        .btn-view { background: #132433; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+        .lang-select { padding: 5px; border-radius: 20px; border: 2px solid #132433; background: white; cursor: pointer; width: 100%; }
+        .lang-checkbox { display: flex; gap: 15px; flex-wrap: wrap; margin: 10px 0; }
+        .lang-checkbox label { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
+        .creator-tag { text-align: center; padding: 20px; color: #5f6b7a; font-style: italic; }
+        .tab-btn { padding: 10px 20px; background: #e0e7ef; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; margin-right: 10px; }
+        .tab-btn.active { background: #132433; color: white; }
+        .admin-tabs { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="header">
+            <h1>CSCA Admin Panel</h1>
+            <p>created by Irsanwu</p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginSection" class="login-box">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Username" value="admin">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" value="admin123">
+            </div>
+            <div id="loginError" class="error"></div>
+            <button class="btn" onclick="adminLogin()">Login</button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="dashboardSection" class="dashboard">
+            <h2 style="color: #132433; margin-bottom: 20px;">Dashboard Admin</h2>
+            
+            <!-- Stats -->
+            <div class="stats-grid" id="statsContainer">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="number" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <div class="number" id="pendingUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active</h3>
+                    <div class="number" id="activeUsers">0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="filterUsers('all')">All Users</button>
+                <button class="tab-btn" onclick="filterUsers('pending')">Pending</button>
+                <button class="tab-btn" onclick="filterUsers('active')">Active</button>
+            </div>
+
+            <!-- Users Table -->
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Register Time</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>CSCA ID</th>
+                            <th>Language Preferences</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load users from localStorage
+        let users = JSON.parse(localStorage.getItem('csca_users')) || [];
+
+        // Demo users if empty
+        if (users.length === 0) {
+            users = [
+                { id: '1', name: 'Zhang Ming', email: 'zhang@email.com', password: '123456', cscaId: 'CSCA-001', registered: new Date().toISOString(), status: 'pending', show_pinyin: false, show_english: false, show_indonesia: false },
+                { id: '2', name: 'Li Wei', email: 'li@email.com', password: '123456', cscaId: 'CSCA-002', registered: new Date().toISOString(), status: 'pending', show_pinyin: false, show_english: false, show_indonesia: false },
+                { id: '3', name: 'Wang Fang', email: 'wang@email.com', password: '123456', cscaId: 'CSCA-003', registered: new Date().toISOString(), status: 'active', show_pinyin: true, show_english: false, show_indonesia: false }
+            ];
+            localStorage.setItem('csca_users', JSON.stringify(users));
+        }
+
+        let currentFilter = 'all';
+
+        function adminLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'admin123') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadUsers();
+            } else {
+                document.getElementById('loginError').innerText = 'Username atau password salah!';
+            }
+        }
+
+        function loadUsers() {
+            users = JSON.parse(localStorage.getItem('csca_users')) || [];
+            
+            // Update stats
+            document.getElementById('totalUsers').innerText = users.length;
+            document.getElementById('pendingUsers').innerText = users.filter(u => u.status === 'pending').length;
+            document.getElementById('activeUsers').innerText = users.filter(u => u.status === 'active').length;
+
+            filterUsers(currentFilter);
+        }
+
+        function filterUsers(filter) {
+            currentFilter = filter;
+            
+            // Update tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.classList.add('active');
+            
+            let filtered = users;
+            if (filter !== 'all') {
+                filtered = users.filter(u => u.status === filter);
+            }
+            
+            renderUsers(filtered);
+        }
+
+        function renderUsers(userList) {
+            let html = '';
+            userList.forEach(user => {
+                const date = new Date(user.registered).toLocaleString();
+                const statusClass = user.status === 'pending' ? 'status-pending' : 'status-active';
+                
+                // Language checkboxes
+                const pinyinChecked = user.show_pinyin ? 'checked' : '';
+                const englishChecked = user.show_english ? 'checked' : '';
+                const indonesiaChecked = user.show_indonesia ? 'checked' : '';
+                
+                html += `<tr>
+                    <td>${date}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.cscaId || '-'}</td>
+                    <td>
+                        <div class="lang-checkbox">
+                            <label><input type="checkbox" ${pinyinChecked} onchange="updateLanguage('${user.id}', 'pinyin', this.checked)"> Pinyin</label>
+                            <label><input type="checkbox" ${englishChecked} onchange="updateLanguage('${user.id}', 'english', this.checked)"> English</label>
+                            <label><input type="checkbox" ${indonesiaChecked} onchange="updateLanguage('${user.id}', 'indonesia', this.checked)"> Indonesia</label>
+                        </div>
+                    </td>
+                    <td><span class="${statusClass}">${user.status}</span></td>
+                    <td>
+                        ${user.status === 'pending' ? 
+                            `<button class="btn-approve" onclick="approveUser('${user.id}')">Approve</button>
+                             <button class="btn-reject" onclick="rejectUser('${user.id}')">Reject</button>` : 
+                            user.status === 'active' ?
+                            `<button class="btn-danger" onclick="deactivateUser('${user.id}')">Deactivate</button>` :
+                            `<button class="btn-approve" onclick="reactivateUser('${user.id}')">Reactivate</button>`
+                        }
+                        <button class="btn-view" onclick="viewUser('${user.id}')">View</button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('usersTableBody').innerHTML = html;
+        }
+
+        function updateLanguage(userId, lang, value) {
+            users = users.map(u => {
+                if (u.id === userId) {
+                    if (lang === 'pinyin') u.show_pinyin = value;
+                    if (lang === 'english') u.show_english = value;
+                    if (lang === 'indonesia') u.show_indonesia = value;
+                }
+                return u;
+            });
+            localStorage.setItem('csca_users', JSON.stringify(users));
+        }
+
+        function approveUser(userId) {
+            users = users.map(u => {
+                if (u.id === userId) u.status = 'active';
+                return u;
+            });
+            localStorage.setItem('csca_users', JSON.stringify(users));
+            loadUsers();
+            alert('User approved!');
+        }
+
+        function rejectUser(userId) {
+            users = users.map(u => {
+                if (u.id === userId) u.status = 'inactive';
+                return u;
+            });
+            localStorage.setItem('csca_users', JSON.stringify(users));
+            loadUsers();
+            alert('User rejected');
+        }
+
+        function deactivateUser(userId) {
+            if (confirm('Deactivate this user?')) {
+                users = users.map(u => {
+                    if (u.id === userId) u.status = 'inactive';
+                    return u;
+                });
+                localStorage.setItem('csca_users', JSON.stringify(users));
+                loadUsers();
+            }
+        }
+
+        function reactivateUser(userId) {
+            users = users.map(u => {
+                if (u.id === userId) u.status = 'active';
+                return u;
+            });
+            localStorage.setItem('csca_users', JSON.stringify(users));
+            loadUsers();
+        }
+
+        function viewUser(userId) {
+            const user = users.find(u => u.id === userId);
+            alert(`User Details:\nName: ${user.name}\nEmail: ${user.email}\nCSCA ID: ${user.cscaId || '-'}\nStatus: ${user.status}\nPinyin: ${user.show_pinyin ? 'Yes' : 'No'}\nEnglish: ${user.show_english ? 'Yes' : 'No'}\nIndonesia: ${user.show_indonesia ? 'Yes' : 'No'}`);
+        }
+    </script>
+</body>
+</html>

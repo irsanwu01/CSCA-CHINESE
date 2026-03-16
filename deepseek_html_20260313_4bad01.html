@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSCA 数学 · 完整考试系统</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: linear-gradient(135deg, #0b2b40, #1a4b6d); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 1400px; background: rgba(255,255,255,0.95); border-radius: 48px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(10px); }
+        
+        /* Language Switcher */
+        .language-switcher { position: absolute; top: 20px; right: 30px; display: flex; gap: 10px; z-index: 10; }
+        .lang-btn { background: transparent; border: 2px solid #132433; color: #132433; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .lang-btn.active { background: #132433; color: white; }
+        
+        /* Auth Pages */
+        .auth-container { display: flex; min-height: 600px; position: relative; }
+        .auth-left { flex: 1; background: #132433; color: white; padding: 50px; display: flex; flex-direction: column; justify-content: center; }
+        .auth-left h1 { font-size: 2.5rem; margin-bottom: 20px; }
+        .auth-left p { font-size: 1.1rem; opacity: 0.8; line-height: 1.6; }
+        .auth-right { flex: 1; padding: 50px; background: white; }
+        .auth-form { max-width: 400px; margin: 0 auto; }
+        .auth-form h2 { font-size: 2rem; color: #132433; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .form-group input { width: 100%; padding: 15px 20px; border: 2px solid #e0e7ef; border-radius: 30px; font-size: 1rem; transition: 0.3s; }
+        .form-group input:focus { outline: none; border-color: #132433; }
+        .btn-auth { width: 100%; padding: 16px; background: #132433; color: white; border: none; border-radius: 30px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-auth:hover { background: #1e4b6e; }
+        .btn-auth:disabled { background: #95a5a6; cursor: not-allowed; }
+        .auth-switch { text-align: center; margin-top: 25px; color: #5f6b7a; }
+        .auth-switch a { color: #132433; font-weight: 600; text-decoration: none; cursor: pointer; }
+        .auth-switch a:hover { text-decoration: underline; }
+        .error-message { color: #e74c3c; font-size: 0.9rem; margin-top: 5px; }
+        .success-message { color: #27ae60; font-size: 0.9rem; margin-top: 5px; }
+
+        /* Main Header */
+        .main-header { background: #132433; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .user-email { font-size: 1rem; background: #1e4b6e; padding: 8px 20px; border-radius: 30px; }
+        .btn-logout { background: transparent; border: 2px solid white; color: white; padding: 8px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-logout:hover { background: white; color: #132433; }
+        .global-timer { background: #1e4b6e; padding: 8px 25px; border-radius: 30px; font-size: 1.8rem; font-family: monospace; letter-spacing: 3px; }
+        .creator-tag { text-align: right; padding: 10px 30px; background: #f0f4fa; color: #4a5c6e; font-style: italic; }
+        .content-area { padding: 30px; min-height: 500px; background: white; }
+
+        /* Package Selection */
+        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 30px 0; }
+        .package-card { background: #f0f4fa; border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; border: 3px solid transparent; }
+        .package-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .package-card.selected { border-color: #132433; background: #e0e9f5; }
+        .package-card h3 { font-size: 2rem; color: #132433; margin-bottom: 10px; }
+        .package-card p { color: #5f6b7a; }
+
+        /* Exam Interface */
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f0f4fa; padding: 15px 25px; border-radius: 50px; }
+        .question-counter { font-size: 1.2rem; font-weight: 600; }
+        .per-question-timer { background: #132433; color: white; padding: 8px 25px; border-radius: 40px; font-size: 1.4rem; font-family: monospace; }
+        .question-block { margin-bottom: 30px; padding: 30px; background: #f9fcff; border-radius: 30px; border-left: 8px solid #132433; }
+        .question-text { font-size: 1.6rem; font-weight: 500; margin-bottom: 30px; }
+        .options { display: flex; flex-direction: column; gap: 15px; }
+        .option-item { display: flex; align-items: center; gap: 20px; background: white; padding: 15px 30px; border-radius: 60px; border: 2px solid #e0e7ef; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .option-item:hover { border-color: #132433; }
+        .option-item.selected { background: #d5e5ff; border-color: #132433; }
+        .option-item input[type="radio"] { width: 22px; height: 22px; accent-color: #132433; }
+        .footer-nav { display: flex; justify-content: space-between; margin: 30px 0; }
+        .btn-secondary { background: white; border: 2px solid #132433; padding: 12px 32px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 1rem; }
+        .btn-primary { background: #132433; color: white; border: none; padding: 15px 40px; border-radius: 40px; font-size: 1.2rem; font-weight: 600; cursor: pointer; }
+        .btn-primary:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        /* Result Panel */
+        .result-panel { background: linear-gradient(145deg, #132433, #1e3347); color: white; border-radius: 38px; padding: 40px; margin-top: 20px; }
+        .score-grid { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; margin: 30px 0; }
+        .score-item { background: #1f3c54; border-radius: 40px; padding: 25px 40px; text-align: center; }
+        .score-item .label { opacity: 0.8; font-size: 1rem; }
+        .score-item .value { font-size: 3rem; font-weight: 700; }
+        .review-table { background: #1f384b; border-radius: 28px; padding: 20px; margin-top: 25px; max-height: 400px; overflow-y: auto; }
+        .review-row { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #3f5a70; align-items: center; }
+        .review-correct { color: #a5d6a5; }
+        .review-wrong { color: #f7b2b2; }
+        .english-summary { background: #0d2b40; border-radius: 28px; padding: 20px; margin: 20px 0; color: #e0ecf9; font-size: 1.1rem; }
+
+        /* Loading */
+        .loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .loading-spinner { border: 5px solid #f3f3f3; border-top: 5px solid #132433; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .device-fingerprint { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <button class="lang-btn active" id="langZh" onclick="switchLanguage('zh')">中文</button>
+            <button class="lang-btn" id="langEn" onclick="switchLanguage('en')">English</button>
+        </div>
+
+        <!-- Auth Container (Login/Register) -->
+        <div id="authContainer" class="auth-container">
+            <div class="auth-left">
+                <h1 id="leftTitle">CSCA 数学<br>模拟考试平台</h1>
+                <p id="leftDesc">
+                    📚 10套完整试题 · 48题/套<br>
+                    ⏱️ 60分钟限时 · 逐题计时<br>
+                    📊 详细评分 · 英文评语<br>
+                    🔒 个人账户 · 安全加密
+                </p>
+                <p style="margin-top: 30px; font-size: 0.9rem;">created by Irsanwu</p>
+            </div>
+            <div class="auth-right">
+                <!-- Login Form -->
+                <div class="auth-form" id="loginForm">
+                    <h2 id="loginTitle">登录</h2>
+                    <div class="form-group">
+                        <label id="loginEmailLabel">邮箱</label>
+                        <input type="email" id="loginEmail" placeholder="nama@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label id="loginPasswordLabel">密码</label>
+                        <input type="password" id="loginPassword" placeholder="********">
+                    </div>
+                    <div id="loginError" class="error-message"></div>
+                    <button class="btn-auth" onclick="handleLogin()" id="loginBtn">登录</button>
+                    <div class="auth-switch">
+                        <span id="noAccountText">还没有账号？</span> <a onclick="showRegister()" id="registerLink">注册新账号</a>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div class="auth-form" id="registerForm" style="display: none;">
+                    <h2 id="registerTitle">注册</h2>
+                    <div class="form-group">
+                        <label id="registerNameLabel">姓名</label>
+                        <input type="text" id="regName" placeholder="Zhang Ming">
+                    </div>
+                    <div class="form-group">
+                        <label id="registerEmailLabel">邮箱</label>
+                        <input type="email" id="regEmail" placeholder="nama@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label id="registerPasswordLabel">密码</label>
+                        <input type="password" id="regPassword" placeholder="minimal 6 karakter">
+                    </div>
+                    <div class="form-group">
+                        <label id="registerCscaLabel">CSCA编号 (可选)</label>
+                        <input type="text" id="regCsca" placeholder="CSCA-XXXX">
+                    </div>
+                    <div id="registerError" class="error-message"></div>
+                    <div id="registerSuccess" class="success-message"></div>
+                    <button class="btn-auth" onclick="handleRegister()" id="registerBtn">注册</button>
+                    <div class="auth-switch">
+                        <span id="haveAccountText">已有账号？</span> <a onclick="showLogin()" id="loginLink">登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App (after login) -->
+        <div id="mainApp" style="display: none;">
+            <div class="main-header">
+                <div class="user-info">
+                    <span class="user-email" id="userEmailDisplay"></span>
+                    <span class="user-email" id="userStatusDisplay" style="background: #28a745;">Active</span>
+                    <button class="btn-logout" onclick="handleLogout()" id="logoutBtn">登出</button>
+                </div>
+                <div class="global-timer" id="globalTimerDisplay">60:00</div>
+            </div>
+            <div class="creator-tag">created by Irsanwu</div>
+            <div class="content-area" id="mainContent">
+                <!-- Package Selection (default view) -->
+                <div id="packageSelectionView">
+                    <h2 style="color: #132433; text-align: center;" id="selectPackageTitle">请选择试题包</h2>
+                    <div class="package-grid" id="packageGrid"></div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn-primary" onclick="startExam()" id="startExamBtn" disabled>开始考试</button>
+                    </div>
+                </div>
+
+                <!-- Exam View (hidden by default) -->
+                <div id="examView" style="display: none;">
+                    <div class="exam-header">
+                        <span class="question-counter" id="progressText">第 1 / 48 题</span>
+                        <span class="per-question-timer" id="perQuestionTimer">0.0 s</span>
+                    </div>
+                    <div id="questionsContainer"></div>
+                    <div class="footer-nav">
+                        <button class="btn-secondary" id="prevBtn" disabled>← 上一题</button>
+                        <button class="btn-secondary" id="nextBtn">下一题 →</button>
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button class="btn-primary" id="submitExamBtn">提交试卷</button>
+                    </div>
+                </div>
+
+                <!-- Result View (hidden by default) -->
+                <div id="resultView" style="display: none;" class="result-panel">
+                    <h2 style="margin-top:0;">📋 考试结果 · Exam Result</h2>
+                    <div id="resultContent"></div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn-secondary" onclick="backToPackageSelection()" style="background: white; color: #132433;">返回试题包</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TRANSLATIONS ====================
+        const translations = {
+            zh: {
+                leftTitle: 'CSCA 数学<br>模拟考试平台',
+                leftDesc: '📚 10套完整试题 · 48题/套<br>⏱️ 60分钟限时 · 逐题计时<br>📊 详细评分 · 英文评语<br>🔒 个人账户 · 安全加密',
+                loginTitle: '登录',
+                loginEmailLabel: '邮箱',
+                loginPasswordLabel: '密码',
+                loginBtn: '登录',
+                noAccountText: '还没有账号？',
+                registerLink: '注册新账号',
+                registerTitle: '注册',
+                registerNameLabel: '姓名',
+                registerEmailLabel: '邮箱',
+                registerPasswordLabel: '密码',
+                registerCscaLabel: 'CSCA编号 (可选)',
+                registerBtn: '注册',
+                haveAccountText: '已有账号？',
+                loginLink: '登录',
+                logoutBtn: '登出',
+                selectPackageTitle: '请选择试题包',
+                startExamBtn: '开始考试',
+                prevBtn: '← 上一题',
+                nextBtn: '下一题 →',
+                submitBtn: '提交试卷'
+            },
+            en: {
+                leftTitle: 'CSCA Mathematics<br>Exam Platform',
+                leftDesc: '📚 10 Complete Test Sets · 48 Questions/Set<br>⏱️ 60-Minute Timer · Per-Question Timing<br>📊 Detailed Scoring · English Summary<br>🔒 Personal Account · Secure Encryption',
+                loginTitle: 'Login',
+                loginEmailLabel: 'Email',
+                loginPasswordLabel: 'Password',
+                loginBtn: 'Login',
+                noAccountText: 'Don\'t have an account?',
+                registerLink: 'Register',
+                registerTitle: 'Register',
+                registerNameLabel: 'Full Name',
+                registerEmailLabel: 'Email',
+                registerPasswordLabel: 'Password',
+                registerCscaLabel: 'CSCA Number (Optional)',
+                registerBtn: 'Register',
+                haveAccountText: 'Already have an account?',
+                loginLink: 'Login',
+                logoutBtn: 'Logout',
+                selectPackageTitle: 'Select Test Package',
+                startExamBtn: 'Start Exam',
+                prevBtn: '← Previous',
+                nextBtn: 'Next →',
+                submitBtn: 'Submit Exam'
+            }
+        };
+
+        let currentLang = 'zh';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('langZh').classList.toggle('active', lang === 'zh');
+            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+            updateUILanguage();
+        }
+
+        function updateUILanguage() {
+            const t = translations[currentLang];
+            document.getElementById('leftTitle').innerHTML = t.leftTitle;
+            document.getElementById('leftDesc').innerHTML = t.leftDesc;
+            document.getElementById('loginTitle').innerText = t.loginTitle;
+            document.getElementById('loginEmailLabel').innerText = t.loginEmailLabel;
+            document.getElementById('loginPasswordLabel').innerText = t.loginPasswordLabel;
+            document.getElementById('loginBtn').innerText = t.loginBtn;
+            document.getElementById('noAccountText').innerText = t.noAccountText;
+            document.getElementById('registerLink').innerText = t.registerLink;
+            document.getElementById('registerTitle').innerText = t.registerTitle;
+            document.getElementById('registerNameLabel').innerText = t.registerNameLabel;
+            document.getElementById('registerEmailLabel').innerText = t.registerEmailLabel;
+            document.getElementById('registerPasswordLabel').innerText = t.registerPasswordLabel;
+            document.getElementById('registerCscaLabel').innerText = t.registerCscaLabel;
+            document.getElementById('registerBtn').innerText = t.registerBtn;
+            document.getElementById('haveAccountText').innerText = t.haveAccountText;
+            document.getElementById('loginLink').innerText = t.loginLink;
+            document.getElementById('logoutBtn').innerText = t.logoutBtn;
+            document.getElementById('selectPackageTitle').innerText = t.selectPackageTitle;
+            document.getElementById('startExamBtn').innerText = t.startExamBtn;
+            document.getElementById('prevBtn').innerText = t.prevBtn;
+            document.getElementById('nextBtn').innerText = t.nextBtn;
+            document.getElementById('submitExamBtn').innerText = t.submitBtn;
+        }
+
+        // ==================== USER DATABASE ====================
+        let users = JSON.parse(localStorage.getItem('csca_users')) || [];
+        let sessions = JSON.parse(localStorage.getItem('csca_sessions')) || [];
+
+        // ==================== DEVICE FINGERPRINT ====================
+        function getDeviceFingerprint() {
+            const screen = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const language = navigator.language;
+            const platform = navigator.platform;
+            const userAgent = navigator.userAgent;
+            
+            let fingerprint = `${screen}|${timezone}|${language}|${platform}|${userAgent}`;
+            let hash = 0;
+            for (let i = 0; i < fingerprint.length; i++) {
+                hash = ((hash << 5) - hash) + fingerprint.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return hash.toString(16);
+        }
+
+        // ==================== SESSION MANAGEMENT ====================
+        function createSession(userId, deviceFingerprint) {
+            sessions = sessions.filter(s => s.userId !== userId);
+            const session = {
+                userId: userId,
+                deviceFingerprint: deviceFingerprint,
+                loginTime: new Date().toISOString(),
+                sessionId: Math.random().toString(36).substring(2) + Date.now().toString(36)
+            };
+            sessions.push(session);
+            localStorage.setItem('csca_sessions', JSON.stringify(sessions));
+            return session;
+        }
+
+        function validateSession(userId, deviceFingerprint) {
+            const session = sessions.find(s => s.userId === userId);
+            if (!session) return false;
+            return session.deviceFingerprint === deviceFingerprint;
+        }
+
+        function clearSession(userId) {
+            sessions = sessions.filter(s => s.userId !== userId);
+            localStorage.setItem('csca_sessions', JSON.stringify(sessions));
+        }
+
+        // ==================== AUTH FUNCTIONS ====================
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginError').innerText = '';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('registerError').innerText = '';
+            document.getElementById('registerSuccess').innerText = '';
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const cscaId = document.getElementById('regCsca').value.trim();
+            const t = translations[currentLang];
+
+            if (!name || !email || !password) {
+                document.getElementById('registerError').innerText = t.registerError || 'All fields are required';
+                return;
+            }
+            if (password.length < 6) {
+                document.getElementById('registerError').innerText = t.passwordError || 'Password must be at least 6 characters';
+                return;
+            }
+            if (users.find(u => u.email === email)) {
+                document.getElementById('registerError').innerText = t.emailExists || 'Email already registered';
+                return;
+            }
+
+            const newUser = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                password: password,
+                cscaId: cscaId,
+                registered: new Date().toISOString(),
+                status: 'pending' // Menunggu approval admin
+            };
+            users.push(newUser);
+            localStorage.setItem('csca_users', JSON.stringify(users));
+
+            document.getElementById('registerSuccess').innerText = t.registerSuccess || 'Registration successful! Please wait for admin approval.';
+            setTimeout(() => showLogin(), 2000);
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const t = translations[currentLang];
+
+            if (!email || !password) {
+                document.getElementById('loginError').innerText = t.loginError || 'Please enter email and password';
+                return;
+            }
+
+            showLoading();
+
+            setTimeout(() => {
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (!user) {
+                    document.getElementById('loginError').innerText = t.loginInvalid || 'Invalid email or password';
+                    hideLoading();
+                    return;
+                }
+
+                // Check if user is approved
+                if (user.status !== 'active') {
+                    document.getElementById('loginError').innerText = 'Your account is pending approval. Please wait for admin activation.';
+                    hideLoading();
+                    return;
+                }
+
+                const deviceFp = getDeviceFingerprint();
+                const existingSession = sessions.find(s => s.userId === user.id);
+
+                if (existingSession && existingSession.deviceFingerprint !== deviceFp) {
+                    document.getElementById('loginError').innerText = t.deviceError || 'This account is already logged in on another device.';
+                    hideLoading();
+                    return;
+                }
+
+                if (existingSession) {
+                    clearSession(user.id);
+                }
+
+                createSession(user.id, deviceFp);
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    cscaId: user.cscaId,
+                    status: user.status
+                }));
+
+                // Show main app
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                document.getElementById('userStatusDisplay').innerText = user.status;
+
+                // Load packages
+                loadPackages();
+
+                hideLoading();
+            }, 1000);
+        }
+
+        function handleLogout() {
+            const user = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (user) {
+                clearSession(user.id);
+                sessionStorage.removeItem('currentUser');
+            }
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            // Reset views
+            document.getElementById('packageSelectionView').style.display = 'block';
+            document.getElementById('examView').style.display = 'none';
+            document.getElementById('resultView').style.display = 'none';
+        }
+
+        function checkExistingSession() {
+            const user = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!user) return false;
+
+            const deviceFp = getDeviceFingerprint();
+            if (!validateSession(user.id, deviceFp)) {
+                sessionStorage.removeItem('currentUser');
+                return false;
+            }
+            return user;
+        }
+
+        // ==================== PACKAGE SELECTION ====================
+        let selectedPackage = null;
+        
+        function loadPackages() {
+            const grid = document.getElementById('packageGrid');
+            let html = '';
+            for (let i = 1; i <= 10; i++) {
+                html += `
+                    <div class="package-card" onclick="selectPackage(${i})" id="package-${i}">
+                        <h3>${currentLang === 'zh' ? '包' : 'Set'} ${i}</h3>
+                        <p>48 ${currentLang === 'zh' ? '题' : 'questions'}</p>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        function selectPackage(pkg) {
+            selectedPackage = pkg;
+            document.querySelectorAll('.package-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`package-${pkg}`).classList.add('selected');
+            document.getElementById('startExamBtn').disabled = false;
+        }
+
+        // ==================== EXAM STATE ====================
+        let currentIndex = 0;
+        let userAnswers = new Array(48).fill(null);
+        let timeSpentPerQuestion = new Array(48).fill(0);
+        let perQuestionStart = null;
+        let perQuestionTimerInterval = null;
+        let globalTimeLeft = 60 * 60;
+        let globalTimerInterval = null;
+        let examStarted = false;
+        let examEnded = false;
+
+        // Question Bank (simplified for demo)
+        const questionBank = [];
+        for (let i = 1; i <= 48; i++) {
+            questionBank.push({
+                part: i <= 17 ? 1 : (i <= 31 ? 2 : (i <= 41 ? 3 : 4)),
+                text: `问题 ${i}：这是示例问题描述...`,
+                opts: ['选项 A', '选项 B', '选项 C', '选项 D'],
+                correct: 0
+            });
+        }
+
+        function startExam() {
+            if (!selectedPackage) return;
+            
+            // Reset exam state
+            currentIndex = 0;
+            userAnswers = new Array(48).fill(null);
+            timeSpentPerQuestion = new Array(48).fill(0);
+            globalTimeLeft = 60 * 60;
+            examStarted = true;
+            examEnded = false;
+            
+            document.getElementById('globalTimerDisplay').innerText = formatTime(globalTimeLeft);
+            document.getElementById('packageSelectionView').style.display = 'none';
+            document.getElementById('examView').style.display = 'block';
+            document.getElementById('resultView').style.display = 'none';
+            
+            renderQuestion(currentIndex);
+            startGlobalTimer();
+            startPerQuestionTimer();
+        }
+
+        function renderQuestion(index) {
+            const q = questionBank[index];
+            let html = `<div class="question-block">
+                <div class="question-text">${index+1}. ${q.text}</div>
+                <div class="options">`;
+            
+            q.opts.forEach((opt, optIdx) => {
+                let checked = (userAnswers[index] === optIdx) ? 'checked' : '';
+                html += `<div class="option-item ${checked ? 'selected' : ''}">
+                    <input type="radio" name="q${index}" value="${optIdx}" ${checked} data-qidx="${index}" data-oidx="${optIdx}">
+                    <span>${String.fromCharCode(65+optIdx)}. ${opt}</span>
+                </div>`;
+            });
+            html += `</div></div>`;
+            document.getElementById('questionsContainer').innerHTML = html;
+
+            // Radio handlers
+            document.querySelectorAll(`input[name="q${index}"]`).forEach(radio => {
+                radio.addEventListener('change', function(e) {
+                    let qIdx = parseInt(this.dataset.qidx);
+                    let oIdx = parseInt(this.dataset.oidx);
+                    if (userAnswers[qIdx] !== null && userAnswers[qIdx] !== oIdx) {
+                        e.preventDefault();
+                        this.checked = false;
+                        alert('Answer cannot be changed');
+                    } else if (userAnswers[qIdx] === null) {
+                        userAnswers[qIdx] = oIdx;
+                        renderQuestion(currentIndex);
+                    }
+                });
+            });
+
+            document.getElementById('prevBtn').disabled = (index === 0);
+            document.getElementById('nextBtn').disabled = (index === 47);
+            document.getElementById('progressText').innerText = `第 ${index+1} / 48 题`;
+        }
+
+        function startGlobalTimer() {
+            if (globalTimerInterval) clearInterval(globalTimerInterval);
+            globalTimerInterval = setInterval(() => {
+                if (!examStarted || examEnded) return;
+                globalTimeLeft--;
+                document.getElementById('globalTimerDisplay').innerText = formatTime(globalTimeLeft);
+                if (globalTimeLeft <= 0) finishExam();
+            }, 1000);
+        }
+
+        function startPerQuestionTimer() {
+            if (perQuestionTimerInterval) clearInterval(perQuestionTimerInterval);
+            perQuestionStart = performance.now();
+            perQuestionTimerInterval = setInterval(() => {
+                if (!examStarted || examEnded) return;
+                let elapsed = (performance.now() - perQuestionStart) / 1000;
+                document.getElementById('perQuestionTimer').innerText = elapsed.toFixed(1) + ' s';
+            }, 100);
+        }
+
+        function stopPerQuestionTimer() {
+            if (perQuestionTimerInterval) {
+                clearInterval(perQuestionTimerInterval);
+                if (perQuestionStart) {
+                    timeSpentPerQuestion[currentIndex] += (performance.now() - perQuestionStart) / 1000;
+                }
+                perQuestionTimerInterval = null;
+            }
+        }
+
+        function moveToQuestion(newIndex) {
+            if (newIndex < 0 || newIndex >= 48) return;
+            
+            stopPerQuestionTimer();
+            currentIndex = newIndex;
+            
+            perQuestionStart = performance.now();
+            perQuestionTimerInterval = setInterval(() => {
+                let elapsed = (performance.now() - perQuestionStart) / 1000;
+                document.getElementById('perQuestionTimer').innerText = elapsed.toFixed(1) + ' s';
+            }, 100);
+            
+            renderQuestion(currentIndex);
+        }
+
+        function finishExam() {
+            if (examEnded) return;
+            examEnded = true;
+            examStarted = false;
+            
+            clearInterval(globalTimerInterval);
+            stopPerQuestionTimer();
+            
+            // Calculate score (simplified)
+            let partCorrect = [0,0,0,0];
+            for (let i = 0; i < 48; i++) {
+                let part = questionBank[i].part - 1;
+                if (userAnswers[i] === 0) partCorrect[part]++;
+            }
+            
+            let weighted = (partCorrect[0]/17)*35 + (partCorrect[1]/14)*30 + (partCorrect[2]/10)*20 + (partCorrect[3]/7)*15;
+            
+            // Show results
+            document.getElementById('examView').style.display = 'none';
+            document.getElementById('resultView').style.display = 'block';
+            
+            document.getElementById('resultContent').innerHTML = `
+                <div class="score-grid">
+                    <div class="score-item"><span class="label">总分</span><div class="value">${weighted.toFixed(2)}</div></div>
+                </div>
+                <div class="english-summary">
+                    <strong>Score Summary</strong><br>
+                    Algebra: ${partCorrect[0]}/17<br>
+                    Calculus: ${partCorrect[1]}/14<br>
+                    Geometry: ${partCorrect[2]}/10<br>
+                    Statistics: ${partCorrect[3]}/7
+                </div>
+            `;
+        }
+
+        function backToPackageSelection() {
+            document.getElementById('packageSelectionView').style.display = 'block';
+            document.getElementById('examView').style.display = 'none';
+            document.getElementById('resultView').style.display = 'none';
+            selectedPackage = null;
+            document.getElementById('startExamBtn').disabled = true;
+        }
+
+        function formatTime(s) {
+            let m = Math.floor(s / 60);
+            let sec = s % 60;
+            return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        }
+
+        // ==================== INIT ====================
+        window.onload = function() {
+            switchLanguage('zh');
+            
+            // Navigation
+            document.getElementById('prevBtn').addEventListener('click', () => moveToQuestion(currentIndex - 1));
+            document.getElementById('nextBtn').addEventListener('click', () => moveToQuestion(currentIndex + 1));
+            document.getElementById('submitExamBtn').addEventListener('click', finishExam);
+            
+            // Check existing session
+            const user = checkExistingSession();
+            if (user) {
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                loadPackages();
+            }
+        };
+    </script>
+</body>
+</html>
