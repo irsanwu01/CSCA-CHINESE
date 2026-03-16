@@ -124,12 +124,14 @@ chart.destroy()
 chart=null
 }
 
+
 /* CLEAN TEXT */
 
 text=text
 .replace(/\*/g,"")
 .replace(/²/g,"^2")
 .replace(/\s+/g," ")
+
 
 
 
@@ -177,7 +179,7 @@ return
 
 /* ===== DETECT HYPERBOLA ===== */
 
-let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)/i)
+let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)(\s*=\s*1)?/i)
 
 if(!hyper) return
 
@@ -208,14 +210,12 @@ datasets:[
 
 {
 data:right,
-showLine:false,
 backgroundColor:"purple",
 pointRadius:2
 },
 
 {
 data:left,
-showLine:false,
 backgroundColor:"purple",
 pointRadius:2
 },
@@ -243,3 +243,7 @@ y:{min:-6,max:6}
 })
 
 }
+
+
+
+loadSet()
