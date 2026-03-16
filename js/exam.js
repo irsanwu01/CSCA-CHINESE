@@ -10,8 +10,6 @@ async function loadSet(n){
 
 let file = "./questions/set"+n+".json"
 
-console.log("loading",file)
-
 let res = await fetch(file)
 
 questions = await res.json()
@@ -35,8 +33,6 @@ document.getElementById("questionBox").innerHTML =
 "<b>"+(current+1)+".</b> "+q.hanzi
 
 renderOptions(q)
-
-renderDiagram(q.hanzi)
 
 updateProgress()
 
@@ -69,6 +65,8 @@ function saveAnswer(v){
 
 answers[current] = v
 
+localStorage.setItem("answers",JSON.stringify(answers))
+
 }
 
 function next(){
@@ -76,6 +74,7 @@ function next(){
 if(current < questions.length-1){
 
 current++
+
 showQuestion()
 
 }
@@ -87,6 +86,7 @@ function prev(){
 if(current > 0){
 
 current--
+
 showQuestion()
 
 }
@@ -117,6 +117,8 @@ let percent = Math.round(score/questions.length*100)
 
 alert("Score: "+percent+"%")
 
+localStorage.removeItem("answers")
+
 }
 
 function startTimer(){
@@ -146,62 +148,6 @@ submitExam()
 }
 
 },1000)
-
-}
-
-function clearGraph(){
-
-if(chart){
-
-chart.destroy()
-chart=null
-
-}
-
-}
-
-function renderDiagram(text){
-
-clearGraph()
-
-const canvas = document.getElementById("graph")
-
-if(!canvas) return
-
-let p = text.match(/P\((-?\d+),\s*(-?\d+)\).*Q\((-?\d+),\s*(-?\d+)\)/)
-
-if(p){
-
-let x1 = parseFloat(p[1])
-let y1 = parseFloat(p[2])
-let x2 = parseFloat(p[3])
-let y2 = parseFloat(p[4])
-
-chart = new Chart(canvas,{
-
-type:'scatter',
-
-data:{
-datasets:[{
-data:[
-{x:x1,y:y1},
-{x:x2,y:y2}
-],
-showLine:true
-}]
-},
-
-options:{
-plugins:{legend:{display:false}},
-scales:{
-x:{min:-10,max:10},
-y:{min:-10,max:10}
-}
-}
-
-})
-
-}
 
 }
 
