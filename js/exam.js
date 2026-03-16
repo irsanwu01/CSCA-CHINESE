@@ -1,7 +1,6 @@
 let questions=[]
 let current=0
 let answers=[]
-let qTimes=[]
 
 let params=new URLSearchParams(location.search)
 let set=params.get("set") || 1
@@ -37,7 +36,6 @@ document.getElementById("nav").innerHTML=html
 function goto(i){
 
 current=i
-
 load()
 
 }
@@ -53,7 +51,7 @@ document.getElementById("title").innerText=
 
 document.getElementById("questionBox").innerHTML=q.hanzi
 
-drawGraph(q.graph)
+drawAutoGraph(q.function)
 
 document.getElementById("progress").style.width=
 ((current+1)/questions.length*100)+"%"
@@ -91,7 +89,6 @@ function next(){
 if(current<questions.length-1){
 
 current++
-
 load()
 
 }
@@ -103,7 +100,6 @@ function prev(){
 if(current>0){
 
 current--
-
 load()
 
 }
@@ -134,6 +130,18 @@ showLeaderboard()
 
 }
 
+
+
+
+
+
+
+
+
+/* =========================
+   EXAM TIMER (60 MIN)
+========================= */
+
 let examTime=60*60
 
 function startExamTimer(){
@@ -162,6 +170,17 @@ submitExam()
 
 startExamTimer()
 
+
+
+
+
+
+
+
+/* =========================
+   QUESTION TIMER
+========================= */
+
 let questionTime=0
 let qTimer
 
@@ -182,11 +201,22 @@ document.getElementById("qTimer").innerText=
 
 }
 
-function drawGraph(graph){
+
+
+
+
+
+
+
+/* =========================
+   AUTO GRAPH ENGINE
+========================= */
+
+function drawAutoGraph(func){
 
 const canvas=document.getElementById("graph")
 
-if(!graph){
+if(!func){
 
 canvas.style.display="none"
 return
@@ -195,14 +225,37 @@ return
 
 canvas.style.display="block"
 
+let xs=[]
+let ys=[]
+
+for(let x=-10;x<=10;x+=0.5){
+
+xs.push(x)
+
+let y
+
+try{
+
+y=eval(func.replace(/x/g,"("+x+")"))
+
+}catch{
+
+y=null
+
+}
+
+ys.push(y)
+
+}
+
 new Chart(canvas,{
 
 type:"line",
 
 data:{
-labels:graph.x,
+labels:xs,
 datasets:[{
-data:graph.y,
+data:ys,
 borderColor:"blue",
 borderWidth:2,
 fill:false
@@ -211,12 +264,28 @@ fill:false
 
 options:{
 responsive:false,
-plugins:{legend:{display:false}}
+plugins:{legend:{display:false}},
+scales:{
+x:{display:true},
+y:{display:true}
+}
+
 }
 
 })
 
 }
+
+
+
+
+
+
+
+
+/* =========================
+   LEADERBOARD
+========================= */
 
 function saveScore(score){
 
@@ -248,6 +317,17 @@ document.getElementById("leaderboard").innerHTML=html
 
 }
 
+
+
+
+
+
+
+
+/* =========================
+   SHARE SCORE
+========================= */
+
 function shareScore(){
 
 let correct=answers.filter((a,i)=>a==questions[i].answer).length
@@ -259,6 +339,17 @@ let text="I scored "+score+"% on CSCA Prep! Try it: https://irsanwu01.github.io/
 window.open("https://wa.me/?text="+encodeURIComponent(text))
 
 }
+
+
+
+
+
+
+
+
+/* =========================
+   ANTI REFRESH
+========================= */
 
 window.onbeforeunload=function(){
 
