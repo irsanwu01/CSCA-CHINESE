@@ -7,7 +7,7 @@ async function loadSet(n){
 
 let file = "./questions/set"+n+".json"
 
-console.log("loading",file)
+console.log("Loading:",file)
 
 let res = await fetch(file)
 
@@ -19,6 +19,7 @@ return
 }
 
 current = 0
+
 showQuestion()
 
 }
