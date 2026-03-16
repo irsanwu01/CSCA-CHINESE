@@ -3,55 +3,14 @@ let current=0
 let answers={}
 let chart=null
 
-let timer=null
-let seconds=0
-
-
 async function loadSet(n){
 
 let res=await fetch("./questions/set"+n+".json")
-
 questions=await res.json()
-
-startTimer()
 
 showQuestion()
 
 }
-
-
-function startTimer(){
-
-let m=parseInt(document.getElementById("examTime").value)
-
-seconds=m*60
-
-if(timer) clearInterval(timer)
-
-timer=setInterval(function(){
-
-seconds--
-
-let min=Math.floor(seconds/60)
-let sec=seconds%60
-
-if(sec<10) sec="0"+sec
-
-document.getElementById("timer").innerText="Time: "+min+":"+sec
-
-if(seconds<=0){
-
-clearInterval(timer)
-
-submitExam()
-
-}
-
-},1000)
-
-}
-
-
 
 function showQuestion(){
 
@@ -65,13 +24,9 @@ document.getElementById("questionBox").innerHTML=
 
 renderOptions(q)
 
-renderDiagram(q.hanzi)
-
-updateProgress()
+setTimeout(()=>renderDiagram(q.hanzi),100)
 
 }
-
-
 
 function renderOptions(q){
 
@@ -79,13 +34,9 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
-let checked=answers[current]==i?"checked":""
-
 html+=`
 <label>
-<input type="radio" name="opt"
-value="${i}" ${checked}
-onchange="saveAnswer(${i})">
+<input type="radio" name="opt">
 ${o}
 </label>
 `
@@ -96,95 +47,35 @@ document.getElementById("options").innerHTML=html
 
 }
 
-
-
-function saveAnswer(v){
-
-answers[current]=v
-
-}
-
-
-
-function next(){
-
-if(current<questions.length-1){
-
-current++
-
-showQuestion()
-
-}
-
-}
-
-
-
-function prev(){
-
-if(current>0){
-
-current--
-
-showQuestion()
-
-}
-
-}
-
-
-
-function updateProgress(){
-
-let p=(current+1)/questions.length*100
-
-document.getElementById("progress").style.width=p+"%"
-
-}
-
-
-
-function submitExam(){
-
-let score=0
-
-questions.forEach((q,i)=>{
-
-if(answers[i]==q.answer) score++
-
-})
-
-let percent=Math.round(score/questions.length*100)
-
-alert("Score: "+percent+"%")
-
-}
-
-
-
 function renderDiagram(text){
 
+console.log("diagram text:",text)
+
 let canvas=document.getElementById("graph")
+
+if(!canvas){
+console.log("canvas not found")
+return
+}
 
 if(chart){
 chart.destroy()
 }
 
-
-// bersihkan format *
 text=text.replace(/\*/g,"")
 
+// detect coordinates
 
-// cari koordinat
 let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
 if(coords.length>=2){
 
-let x1=+coords[0][1]
-let y1=+coords[0][2]
+let x1=parseFloat(coords[0][1])
+let y1=parseFloat(coords[0][2])
+let x2=parseFloat(coords[1][1])
+let y2=parseFloat(coords[1][2])
 
-let x2=+coords[1][1]
-let y2=+coords[1][2]
+console.log("coords:",x1,y1,x2,y2)
 
 chart=new Chart(canvas,{
 type:'scatter',
@@ -200,21 +91,27 @@ pointRadius:6
 },
 options:{
 responsive:true,
-maintainAspectRatio:false
+maintainAspectRatio:false,
+scales:{
+x:{min:-5,max:5},
+y:{min:-5,max:5}
+}
 }
 })
 
 return
 }
 
+// detect hyperbola
 
-// hiperbola
 let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
 if(hyper){
 
-let a=Math.sqrt(+hyper[1])
-let b=Math.sqrt(+hyper[2])
+let a=Math.sqrt(parseFloat(hyper[1]))
+let b=Math.sqrt(parseFloat(hyper[2]))
+
+console.log("hyperbola:",a,b)
 
 let pts=[]
 
@@ -248,6 +145,5 @@ maintainAspectRatio:false
 }
 
 }
-
 
 loadSet(1)
