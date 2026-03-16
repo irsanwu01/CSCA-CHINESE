@@ -176,18 +176,6 @@ chart=null
 
 
 
-function cleanMath(text){
-
-text=text.replace(/\*/g,"")
-text=text.replace(/\s+/g," ")
-text=text.replace(/\^2/g,"²")
-
-return text
-
-}
-
-
-
 function renderDiagram(text){
 
 clearGraph()
@@ -196,13 +184,15 @@ let canvas=document.getElementById("graph")
 
 if(!canvas) return
 
-text=cleanMath(text)
+
+// bersihkan format
+text=text.replace(/\*/g,"")
 
 
 
-// =================
-// TWO POINTS
-// =================
+// =====================
+// DETECT COORDINATES
+// =====================
 
 let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
 
@@ -248,9 +238,9 @@ return
 
 
 
-// =================
-// HYPERBOLA
-// =================
+// =====================
+// DETECT HYPERBOLA
+// =====================
 
 let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
@@ -285,92 +275,11 @@ pointRadius:1
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{legend:{display:false}}
+plugins:{legend:{display:false}},
+scales:{
+x:{min:-6,max:6},
+y:{min:-6,max:6}
 }
-})
-
-return
-
-}
-
-
-
-// =================
-// CIRCLE
-// =================
-
-let circle=text.match(/x²\s*\+\s*y²\s*=\s*(\d+)/)
-
-if(circle){
-
-let r=Math.sqrt(+circle[1])
-
-let pts=[]
-
-for(let t=0;t<360;t+=5){
-
-let rad=t*Math.PI/180
-
-pts.push({
-x:r*Math.cos(rad),
-y:r*Math.sin(rad)
-})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{legend:{display:false}}
-}
-})
-
-return
-
-}
-
-
-
-// =================
-// LINE
-// =================
-
-let line=text.match(/y\s*=\s*(-?\d*)x\s*([+-]\s*\d+)?/)
-
-if(line){
-
-let a=parseFloat(line[1]||1)
-let b=parseFloat(line[2]||0)
-
-let pts=[]
-
-for(let x=-10;x<=10;x++){
-
-pts.push({x:x,y:a*x+b})
-
-}
-
-chart=new Chart(canvas,{
-type:'scatter',
-data:{
-datasets:[{
-data:pts,
-showLine:true,
-pointRadius:0
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false
 }
 })
 
