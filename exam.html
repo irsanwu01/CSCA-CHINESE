@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
-<title>CSCA Exam</title>
+<title>CSCA Prep</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
@@ -31,8 +34,13 @@ height:35px;
 }
 
 .answered{
-background:#8bc34a;
+background:#4caf50;
 color:white;
+}
+
+canvas{
+margin-top:20px;
+margin-bottom:20px;
 }
 
 </style>
@@ -47,6 +55,9 @@ color:white;
 <div id="qTimer"></div>
 
 <div id="questionBox"></div>
+
+<canvas id="graph" width="420" height="300"></canvas>
+
 <div id="options"></div>
 
 <br>
