@@ -1,268 +1,279 @@
-let questions = []
-let current = 0
-let answers = {}
-let chart = null
+let questions=[]
+let current=0
+let answers={}
+let chart=null
 
-let timer = null
-let seconds = 0
+let timer=null
+let seconds=0
 
 
 async function loadSet(){
-  try{
-    const res = await fetch("./questions/set1.json")
-    questions = await res.json()
-  }catch(e){
-    console.log("Load error:", e)
-    questions = []
-  }
 
-  startTimer()
-  showQuestion()
+let res=await fetch("./questions/set1.json")
+questions=await res.json()
+
+startTimer()
+showQuestion()
+
 }
 
 
 function startTimer(){
-  const select = document.getElementById("examTime")
-  if(!select) return
 
-  seconds = parseInt(select.value) * 60
+let select=document.getElementById("examTime")
+if(!select) return
 
-  if(timer) clearInterval(timer)
+seconds=parseInt(select.value)*60
 
-  timer = setInterval(function(){
+if(timer) clearInterval(timer)
 
-    seconds--
+timer=setInterval(function(){
 
-    const min = Math.floor(seconds/60)
-    let sec = seconds % 60
-    if(sec < 10) sec = "0"+sec
+seconds--
 
-    const t = document.getElementById("timer")
-    if(t) t.innerText = "Time: "+min+":"+sec
+let min=Math.floor(seconds/60)
+let sec=seconds%60
+if(sec<10) sec="0"+sec
 
-    if(seconds <= 0){
-      clearInterval(timer)
-      submitExam()
-    }
+document.getElementById("timer").innerText="Time: "+min+":"+sec
 
-  },1000)
+if(seconds<=0){
+clearInterval(timer)
+submitExam()
+}
+
+},1000)
+
 }
 
 
 function showQuestion(){
-  if(questions.length === 0) return
 
-  const q = questions[current]
+let q=questions[current]
 
-  const title = document.getElementById("title")
-  if(title) title.innerText = "Question "+(current+1)+" / "+questions.length
+document.getElementById("title").innerText=
+"Question "+(current+1)+" / "+questions.length
 
-  const qbox = document.getElementById("questionBox")
-  if(qbox) qbox.innerHTML = "<b>"+(current+1)+".</b> "+q.hanzi
+document.getElementById("questionBox").innerHTML=
+"<b>"+(current+1)+".</b> "+q.hanzi
 
-  renderOptions(q)
-  drawGraph(q.hanzi)
-  updateProgress()
+renderOptions(q)
+
+drawGraph(q.hanzi)
+
+updateProgress()
+
 }
 
 
 function renderOptions(q){
-  let html = ""
 
-  q.options.forEach((o,i)=>{
-    const checked = answers[current]==i ? "checked" : ""
+let html=""
 
-    html += `
-    <label>
-      <input type="radio" name="opt"
-      value="${i}" ${checked}
-      onchange="answers[current]=${i}">
-      ${o}
-    </label><br>`
-  })
+q.options.forEach((o,i)=>{
 
-  const opt = document.getElementById("options")
-  if(opt) opt.innerHTML = html
+let checked=answers[current]==i?"checked":""
+
+html+=`
+<label>
+<input type="radio" name="opt"
+value="${i}" ${checked}
+onchange="answers[current]=${i}">
+${o}
+</label><br>
+`
+
+})
+
+document.getElementById("options").innerHTML=html
+
 }
 
 
 function next(){
-  if(current < questions.length-1){
-    current++
-    showQuestion()
-  }
+if(current<questions.length-1){
+current++
+showQuestion()
+}
 }
 
-
 function prev(){
-  if(current > 0){
-    current--
-    showQuestion()
-  }
+if(current>0){
+current--
+showQuestion()
+}
 }
 
 
 function updateProgress(){
-  const bar = document.getElementById("progress")
-  if(!bar) return
 
-  const p = (current+1)/questions.length*100
-  bar.style.width = p + "%"
+let p=(current+1)/questions.length*100
+document.getElementById("progress").style.width=p+"%"
+
 }
 
 
 function submitExam(){
-  let score = 0
 
-  questions.forEach((q,i)=>{
-    if(answers[i] == q.answer) score++
-  })
+let score=0
 
-  alert("Score: "+score+" / "+questions.length)
+questions.forEach((q,i)=>{
+if(answers[i]==q.answer) score++
+})
+
+alert("Score: "+score+" / "+questions.length)
+
 }
 
 
 function drawGraph(text){
 
-  const canvas = document.getElementById("graph")
-  if(!canvas) return
+let canvas=document.getElementById("graph")
+if(!canvas) return
 
-  if(chart){
-    chart.destroy()
-    chart = null
-  }
+if(chart){
+chart.destroy()
+chart=null
+}
 
-  text = text.replace(/\*/g,"")
-
-
-  /* =====================
-     DETECT TWO POINTS
-  ===================== */
-
-  const coords = [...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
-
-  if(coords.length >= 2){
-
-    const x1 = parseFloat(coords[0][1])
-    const y1 = parseFloat(coords[0][2])
-
-    const x2 = parseFloat(coords[1][1])
-    const y2 = parseFloat(coords[1][2])
-
-    chart = new Chart(canvas,{
-      type:'scatter',
-      data:{
-        datasets:[{
-          data:[
-            {x:x1,y:y1},
-            {x:x2,y:y2}
-          ],
-          showLine:true,
-          borderColor:"blue",
-          pointRadius:6
-        }]
-      },
-      options:{
-        plugins:{legend:{display:false}},
-        responsive:true,
-        maintainAspectRatio:false
-      }
-    })
-
-    return
-  }
+text=text.replace(/\*/g,"")
 
 
 
-  /* =====================
-     DETECT HYPERBOLA
-  ===================== */
+/* =====================
+   DETECT TWO POINTS
+===================== */
 
-  const hyper = text.match(/x[\^²]2\/(\d+)\s*-\s*y[\^²]2\/(\d+)/)
+let coords=[...text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g)]
 
-  if(hyper){
+if(coords.length>=2){
 
-    const a = Math.sqrt(parseFloat(hyper[1]))
-    const b = Math.sqrt(parseFloat(hyper[2]))
+let x1=parseFloat(coords[0][1])
+let y1=parseFloat(coords[0][2])
 
-    const rightTop=[]
-    const rightBottom=[]
-    const leftTop=[]
-    const leftBottom=[]
+let x2=parseFloat(coords[1][1])
+let y2=parseFloat(coords[1][2])
 
-    for(let x=a+0.01; x<=6; x+=0.05){
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[{
+data:[
+{x:x1,y:y1},
+{x:x2,y:y2}
+],
+showLine:true,
+borderColor:"blue",
+pointRadius:6
+}]
+},
+options:{
+plugins:{legend:{display:false}},
+responsive:true,
+maintainAspectRatio:false
+}
+})
 
-      const y = b*Math.sqrt((x*x)/(a*a)-1)
+return
+}
 
-      rightTop.push({x:x,y:y})
-      rightBottom.push({x:x,y:-y})
 
-      leftTop.push({x:-x,y:y})
-      leftBottom.push({x:-x,y:-y})
-    }
 
-    const c = Math.sqrt(a*a + b*b)
+/* =====================
+   DETECT HYPERBOLA
+===================== */
 
-    chart = new Chart(canvas,{
-      type:'scatter',
-      data:{
-        datasets:[
+let hyper=text.match(/x[\^²2]\/(\d+)\s*-\s*y[\^²2]\/(\d+)/i)
 
-          {
-            data:rightTop,
-            showLine:true,
-            borderColor:"purple",
-            pointRadius:0,
-            fill:false
-          },
+if(!hyper){
 
-          {
-            data:rightBottom,
-            showLine:true,
-            borderColor:"purple",
-            pointRadius:0,
-            fill:false
-          },
+hyper=text.match(/x.?2\/(\d+)\s*-\s*y.?2\/(\d+)/i)
 
-          {
-            data:leftTop,
-            showLine:true,
-            borderColor:"purple",
-            pointRadius:0,
-            fill:false
-          },
+}
 
-          {
-            data:leftBottom,
-            showLine:true,
-            borderColor:"purple",
-            pointRadius:0,
-            fill:false
-          },
+if(hyper){
 
-          {
-            data:[
-              {x:c,y:0},
-              {x:-c,y:0}
-            ],
-            backgroundColor:"blue",
-            pointRadius:6,
-            showLine:false
-          }
+let a=Math.sqrt(parseFloat(hyper[1]))
+let b=Math.sqrt(parseFloat(hyper[2]))
 
-        ]
-      },
-      options:{
-        plugins:{legend:{display:false}},
-        responsive:true,
-        maintainAspectRatio:false,
-        scales:{
-          x:{min:-6,max:6},
-          y:{min:-6,max:6}
-        }
-      }
-    })
-  }
+let rightTop=[]
+let rightBottom=[]
+let leftTop=[]
+let leftBottom=[]
+
+for(let x=a+0.05;x<=6;x+=0.05){
+
+let y=b*Math.sqrt((x*x)/(a*a)-1)
+
+rightTop.push({x:x,y:y})
+rightBottom.push({x:x,y:-y})
+
+leftTop.push({x:-x,y:y})
+leftBottom.push({x:-x,y:-y})
+
+}
+
+let c=Math.sqrt(a*a+b*b)
+
+chart=new Chart(canvas,{
+type:'scatter',
+data:{
+datasets:[
+
+{
+data:rightTop,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:rightBottom,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:leftTop,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:leftBottom,
+showLine:true,
+borderColor:"purple",
+pointRadius:0
+},
+
+{
+data:[
+{x:c,y:0},
+{x:-c,y:0}
+],
+backgroundColor:"blue",
+pointRadius:6
+}
+
+]
+},
+
+options:{
+plugins:{legend:{display:false}},
+responsive:true,
+maintainAspectRatio:false,
+scales:{
+x:{min:-6,max:6},
+y:{min:-6,max:6}
+}
+}
+
+})
+
+}
+
 }
 
 
