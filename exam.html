@@ -1,26 +1,49 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta charset="UTF-8">
-<title>Exam</title>
-<link rel="stylesheet" href="css/style.css">
+<title>CSCA Exam</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:40px;
+}
+
+#questionBox{
+font-size:22px;
+margin-bottom:20px;
+}
+
+button{
+padding:10px 16px;
+margin:5px;
+cursor:pointer;
+}
+
+</style>
+
 </head>
+
 <body>
 
 <h2 id="title"></h2>
+
 <div id="timer"></div>
 
 <div id="questionBox"></div>
+
 <div id="options"></div>
 
-<div id="nav"></div>
+<br>
 
 <button onclick="prev()">Previous</button>
 <button onclick="next()">Next</button>
 <button onclick="submitExam()">Submit</button>
 
-<script src="js/timer.js"></script>
 <script src="js/exam.js"></script>
 
 </body>
