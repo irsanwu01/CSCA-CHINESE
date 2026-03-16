@@ -2,121 +2,76 @@
 <html>
 
 <head>
-
 <meta charset="UTF-8">
 <title>CSCA Exam</title>
 
 <style>
 
 body{
-font-family:Arial;
-margin:20px;
-max-width:720px;
+font-family: Arial;
+padding:20px;
 }
 
-#graph{
-width:100%;
-height:200px;
+#questionBox{
 border:1px solid #ccc;
-margin-top:10px;
+padding:20px;
+min-height:100px;
+margin-bottom:10px;
+}
+
+#options{
+margin-bottom:10px;
 }
 
 #progressBar{
 width:100%;
-height:8px;
 background:#ddd;
+height:10px;
 margin-top:20px;
 }
 
 #progress{
-height:8px;
-background:#4CAF50;
 width:0%;
-}
-
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:10px;
+height:10px;
+background:#4CAF50;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<div class="topbar">
-
-<div id="userEmail"></div>
-
-<button onclick="logout()">Logout</button>
-
-</div>
-
-<h2 id="title"></h2>
+<h2 id="title">Exam</h2>
 
 <div id="questionBox"></div>
 
 <div id="options"></div>
 
-<canvas id="graph"></canvas>
-
-<br>
-
 <button onclick="prev()">Prev</button>
 <button onclick="next()">Next</button>
 <button onclick="submitExam()">Submit</button>
+
+<br><br>
 
 <div id="progressBar">
 <div id="progress"></div>
 </div>
 
+<br>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<canvas id="graph"></canvas>
+
+
+<!-- IMPORTANT SCRIPTS -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="js/config.js"></script>
+
 <script src="js/auth.js"></script>
 
-<script>
-
-/* =========================
-   LOGIN PROTECTION
-========================= */
-
-async function checkLogin(){
-
-let {data}=await window.db.auth.getSession()
-
-if(!data.session){
-
-window.location="login.html"
-return
-
-}
-
-document.getElementById("userEmail").innerText=data.session.user.email
-
-}
-
-checkLogin()
-
-
-
-/* =========================
-   DETECT SET NUMBER
-========================= */
-
-let params=new URLSearchParams(window.location.search)
-
-let set=params.get("set") || 1
-
-window.currentSet=set
-
-</script>
-
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/exam.js"></script>
 
 </body>
