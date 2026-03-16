@@ -7,7 +7,7 @@ let chart=null
 
 async function loadSet(){
 
-let res=await fetch("./questions/set1.json")
+let res=await fetch("./question/set1.json")
 questions=await res.json()
 
 showQuestion()
@@ -108,16 +108,21 @@ alert("Score: "+score+" / "+questions.length)
 
 
 
-/* =========================
+/* =============================
    GRAPH ENGINE
-========================= */
+============================= */
 
 function drawGraph(text){
 
 let canvas=document.getElementById("graph")
+if(!canvas) return
 
-canvas.width=600
-canvas.height=220
+
+/* responsive size */
+
+canvas.width = canvas.parentElement.clientWidth
+canvas.height = 200
+
 
 if(chart){
 chart.destroy()
@@ -135,7 +140,9 @@ text=text
 
 
 
-/* ===== DETECT POINTS ===== */
+/* =============================
+   DETECT POINTS (SOAL 14)
+============================= */
 
 let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
@@ -164,6 +171,8 @@ pointRadius:6
 
 options:{
 plugins:{legend:{display:false}},
+responsive:true,
+maintainAspectRatio:false,
 scales:{
 x:{min:-5,max:5},
 y:{min:-5,max:5}
@@ -177,9 +186,11 @@ return
 
 
 
-/* ===== DETECT HYPERBOLA ===== */
+/* =============================
+   DETECT HYPERBOLA (SOAL 15)
+============================= */
 
-let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)(\s*=\s*1)?/i)
+let hyper=text.match(/x\^?2\/(\d+)\s*-\s*y\^?2\/(\d+)/i)
 
 if(!hyper) return
 
@@ -234,6 +245,8 @@ pointRadius:6
 
 options:{
 plugins:{legend:{display:false}},
+responsive:true,
+maintainAspectRatio:false,
 scales:{
 x:{min:-6,max:6},
 y:{min:-6,max:6}
@@ -241,6 +254,32 @@ y:{min:-6,max:6}
 }
 
 })
+
+
+
+/* =============================
+   DRAW LABEL FOKUS
+============================= */
+
+setTimeout(()=>{
+
+let ctx=chart.ctx
+let xScale=chart.scales.x
+let yScale=chart.scales.y
+
+ctx.fillStyle="black"
+ctx.font="12px Arial"
+
+let px=xScale.getPixelForValue(c)
+let py=yScale.getPixelForValue(0)
+
+ctx.fillText("("+c+",0)",px+6,py-6)
+
+let px2=xScale.getPixelForValue(-c)
+
+ctx.fillText("("+(-c)+",0)",px2-35,py-6)
+
+},200)
 
 }
 
