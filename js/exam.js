@@ -268,7 +268,7 @@ return
 // TWO POINTS
 // =================
 
-let pq=text.match(/P\(([-\d]+),([-\d]+)\).*Q\(([-\d]+),([-\d]+)\)/)
+let pq=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
 if(pq){
 
