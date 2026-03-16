@@ -3,11 +3,14 @@ let current = 0
 let answers = {}
 let chart = null
 
+// TIMER
+let examMinutes = 60
+let remainingSeconds = examMinutes * 60
+let timerInterval = null
+
 async function loadSet(n){
 
 let file = "./questions/set"+n+".json"
-
-console.log("loading",file)
 
 let res = await fetch(file)
 
@@ -15,7 +18,50 @@ questions = await res.json()
 
 current = 0
 
+startTimer()
+
 showQuestion()
+
+}
+
+function startTimer(){
+
+let select = document.getElementById("examTime")
+
+if(select){
+examMinutes = parseInt(select.value)
+}
+
+remainingSeconds = examMinutes * 60
+
+if(timerInterval) clearInterval(timerInterval)
+
+timerInterval = setInterval(updateTimer,1000)
+
+}
+
+function updateTimer(){
+
+remainingSeconds--
+
+let m = Math.floor(remainingSeconds/60)
+let s = remainingSeconds % 60
+
+if(s<10) s="0"+s
+
+let el=document.getElementById("timer")
+
+if(el){
+el.innerText="Time: "+m+":"+s
+}
+
+if(remainingSeconds<=0){
+
+clearInterval(timerInterval)
+
+submitExam()
+
+}
 
 }
 
@@ -45,7 +91,7 @@ q.options.forEach((o,i)=>{
 
 let checked = answers[current]==i ? "checked" : ""
 
-html += `
+html+=`
 <label>
 <input type="radio" name="opt"
 value="${i}" ${checked}
@@ -56,13 +102,13 @@ ${o}
 
 })
 
-document.getElementById("options").innerHTML = html
+document.getElementById("options").innerHTML=html
 
 }
 
 function saveAnswer(v){
 
-answers[current] = v
+answers[current]=v
 
 }
 
@@ -71,6 +117,7 @@ function next(){
 if(current < questions.length-1){
 
 current++
+
 showQuestion()
 
 }
@@ -82,6 +129,7 @@ function prev(){
 if(current > 0){
 
 current--
+
 showQuestion()
 
 }
@@ -90,15 +138,15 @@ showQuestion()
 
 function updateProgress(){
 
-let p = (current+1)/questions.length*100
+let p=(current+1)/questions.length*100
 
-document.getElementById("progress").style.width = p+"%"
+document.getElementById("progress").style.width=p+"%"
 
 }
 
 function submitExam(){
 
-let score = 0
+let score=0
 
 questions.forEach((q,i)=>{
 
@@ -106,17 +154,22 @@ if(answers[i]==q.answer) score++
 
 })
 
-let percent = Math.round(score/questions.length*100)
+let percent=Math.round(score/questions.length*100)
 
 alert("Score: "+percent+"%")
 
 }
+
+// ========================
+// GRAPH DIAGRAM SYSTEM
+// ========================
 
 function clearGraph(){
 
 if(chart){
 
 chart.destroy()
+
 chart=null
 
 }
@@ -127,28 +180,28 @@ function renderDiagram(text){
 
 clearGraph()
 
-const canvas = document.getElementById("graph")
+let canvas=document.getElementById("graph")
 
 if(!canvas) return
 
-// regex koordinat (support spasi)
-let p = text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
+let p=text.match(/P\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\).*Q\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/)
 
 if(!p){
 
 canvas.style.display="none"
+
 return
 
 }
 
 canvas.style.display="block"
 
-let x1 = parseFloat(p[1])
-let y1 = parseFloat(p[2])
-let x2 = parseFloat(p[3])
-let y2 = parseFloat(p[4])
+let x1=parseFloat(p[1])
+let y1=parseFloat(p[2])
+let x2=parseFloat(p[3])
+let y2=parseFloat(p[4])
 
-chart = new Chart(canvas,{
+chart=new Chart(canvas,{
 
 type:'scatter',
 
