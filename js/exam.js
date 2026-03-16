@@ -24,7 +24,9 @@ document.getElementById("questionBox").innerHTML=
 
 renderOptions(q)
 
-setTimeout(()=>renderDiagram(q.hanzi),100)
+drawDiagram(q.hanzi)
+
+updateProgress()
 
 }
 
@@ -34,11 +36,14 @@ let html=""
 
 q.options.forEach((o,i)=>{
 
+let checked=answers[current]==i?"checked":""
+
 html+=`
 <label>
-<input type="radio" name="opt">
+<input type="radio" name="opt" value="${i}" ${checked}
+onchange="answers[current]=${i}">
 ${o}
-</label>
+</label><br>
 `
 
 })
@@ -47,24 +52,61 @@ document.getElementById("options").innerHTML=html
 
 }
 
-function renderDiagram(text){
+function next(){
 
-console.log("diagram text:",text)
+if(current<questions.length-1){
+
+current++
+showQuestion()
+
+}
+
+}
+
+function prev(){
+
+if(current>0){
+
+current--
+showQuestion()
+
+}
+
+}
+
+function updateProgress(){
+
+let p=(current+1)/questions.length*100
+document.getElementById("progress").style.width=p+"%"
+
+}
+
+function submitExam(){
+
+let score=0
+
+questions.forEach((q,i)=>{
+
+if(answers[i]==q.answer) score++
+
+})
+
+alert("Score: "+score+"/"+questions.length)
+
+}
+
+function drawDiagram(text){
 
 let canvas=document.getElementById("graph")
 
-if(!canvas){
-console.log("canvas not found")
-return
-}
+if(!canvas) return
 
-if(chart){
-chart.destroy()
-}
+if(chart) chart.destroy()
 
 text=text.replace(/\*/g,"")
 
-// detect coordinates
+
+// cari koordinat
 
 let coords=[...text.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)]
 
@@ -72,10 +114,9 @@ if(coords.length>=2){
 
 let x1=parseFloat(coords[0][1])
 let y1=parseFloat(coords[0][2])
+
 let x2=parseFloat(coords[1][1])
 let y2=parseFloat(coords[1][2])
-
-console.log("coords:",x1,y1,x2,y2)
 
 chart=new Chart(canvas,{
 type:'scatter',
@@ -91,18 +132,15 @@ pointRadius:6
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-scales:{
-x:{min:-5,max:5},
-y:{min:-5,max:5}
-}
+maintainAspectRatio:false
 }
 })
 
 return
 }
 
-// detect hyperbola
+
+// hiperbola
 
 let hyper=text.match(/x²\/(\d+)\s*-\s*y²\/(\d+)/)
 
@@ -110,8 +148,6 @@ if(hyper){
 
 let a=Math.sqrt(parseFloat(hyper[1]))
 let b=Math.sqrt(parseFloat(hyper[2]))
-
-console.log("hyperbola:",a,b)
 
 let pts=[]
 
